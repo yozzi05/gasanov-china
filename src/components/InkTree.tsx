@@ -5,13 +5,15 @@
 // которые лежат поверх букв и дают глубину.
 
 // Поле рисунка относительно базового квадрата 1000×1000 (те же числа, что в build-art.mjs)
+import { BASE_PATH } from "@/lib/basePath";
+
 const VIEW = { x: -400, y: -250, w: 1800, h: 1300 };
 
 export function InkTree({ layer = "back" }: { layer?: "back" | "front" }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={`/art/tree-${layer}.svg`}
+      src={`${BASE_PATH}/art/tree-${layer}.svg`}
       alt=""
       aria-hidden
       width={VIEW.w}

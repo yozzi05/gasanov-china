@@ -75,7 +75,7 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: url(/textures/grain.png);
+  background: var(--grain, url(/textures/grain.png));
   pointer-events: none;
   z-index: 1;
 }

@@ -4,6 +4,8 @@ const nextConfig: NextConfig = {
   // Статический экспорт: после `npm run build` готовый сайт лежит в папке out/
   output: "export",
   trailingSlash: true,
+  // для GitHub Pages сайт живёт в подпапке — её задаёт переменная окружения
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || undefined,
   images: {
     // Картинки заранее нарезаны скриптом scripts/optimize-images.mjs,
     // загрузчик только подставляет нужный файл по ширине.

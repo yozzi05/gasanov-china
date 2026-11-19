@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { site, whatsappLink } from "@/content/site";
 import manifest from "@/content/images.json";
 import { Hanzi, HanziWord } from "./Hanzi";
@@ -332,7 +333,7 @@ export function Footer() {
             © {new Date().getFullYear()} {site.person} · {site.brand}
           </p>
           <p>
-            <a href={footer.policy.href}>{footer.policy.label}</a>
+            <Link href={footer.policy.href}>{footer.policy.label}</Link>
           </p>
           <p>{footer.cookies}</p>
         </div>

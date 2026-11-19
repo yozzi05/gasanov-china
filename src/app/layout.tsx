@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Golos_Text, Sofia_Sans_Extra_Condensed } from "next/font/google";
 import { site } from "@/content/site";
+import { BASE_PATH } from "@/lib/basePath";
 import "./globals.css";
 import "./sections.css";
 
@@ -25,7 +26,8 @@ export const metadata: Metadata = {
   title: site.title,
   description: site.description,
   alternates: { canonical: "/" },
-  robots: { index: true, follow: true },
+  // демо-копию (например, на GitHub Pages) от индексации закрываем
+  robots: process.env.NEXT_PUBLIC_NOINDEX ? { index: false, follow: false } : { index: true, follow: true },
   openGraph: {
     type: "website",
     locale: "ru_RU",
@@ -52,7 +54,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" suppressHydrationWarning className={`${sofia.variable} ${golos.variable} antialiased`}>
+    <html
+      lang="ru"
+      suppressHydrationWarning
+      className={`${sofia.variable} ${golos.variable} antialiased`}
+      style={{ "--grain": `url(${BASE_PATH}/textures/grain.png)` } as React.CSSProperties}
+    >
       <head>
         {/* До первой отрисовки отмечаем, можно ли анимировать (для плавного появления блоков) */}
         <script
