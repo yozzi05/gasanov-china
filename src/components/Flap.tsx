@@ -2,10 +2,11 @@
 
 import { useEffect, useRef } from "react";
 
-const CHARSET = "0123456789";
-
-// Перекидное табло, как в порту или аэропорту: каждая ячейка «перелистывает»
-// несколько случайных знаков и останавливается на нужном.
+// Перекидное табло, как в порту или аэропорту.
+// Когда блок входит в экран, число считает от 1 до своего значения
+// (например 1, 2, 3 ... 40), и каждая смена цифры - это «перелистывание» таблички.
+// Знак после числа («+») перелистывается в самом конце, когда счёт дошёл.
+// Без JS и при reduced-motion сразу показано итоговое значение.
 export function Flap({ value }: { value: string }) {
   const root = useRef<HTMLSpanElement>(null);
 
@@ -14,9 +15,17 @@ export function Flap({ value }: { value: string }) {
     if (!el) return;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
+    const target = parseInt(value, 10);
+    if (!Number.isFinite(target)) return;
+    const digits = String(target).length;
+
     const cells = [...el.querySelectorAll<HTMLElement>("[data-flap]")];
-    let tl: { kill(): unknown } | undefined;
+    const digitCells = cells.slice(0, digits);
+    // знак сразу после числа («+»); то, что стоит через пробел («$»), не трогаем
+    const sign = value.charAt(digits).trim() ? cells[digits] : undefined;
+
     let cancelled = false;
+    let tween: { kill(): unknown } | undefined;
 
     const io = new IntersectionObserver(
       async ([entry]) => {
@@ -24,28 +33,48 @@ export function Flap({ value }: { value: string }) {
         io.disconnect();
         const { default: gsap } = await import("gsap");
         if (cancelled) return;
-        const board = gsap.timeline();
-        tl = board;
-        cells.forEach((cell, ci) => {
+
+        // одна табличка перелистывается на новый знак
+        const flip = (cell: HTMLElement, ch: string) => {
           const top = cell.querySelector<HTMLElement>("[data-top]")!;
           const bot = cell.querySelector<HTMLElement>("[data-bot]")!;
-          const glyphs = cell.querySelectorAll("i");
-          const target = cell.dataset.flap!;
-          const steps = 7 + ci * 3;
-          const seq = Array.from({ length: steps }, () => CHARSET[(Math.random() * 10) | 0]).concat(target);
-          const set = (ch: string) => glyphs.forEach((g) => (g.textContent = ch));
+          cell.querySelectorAll("i").forEach((g) => (g.textContent = ch));
+          gsap.fromTo(top, { scaleY: 0.15 }, { scaleY: 1, duration: 0.12, ease: "power2.out", overwrite: true });
+          gsap.fromTo(bot, { scaleY: 0 }, { scaleY: 1, duration: 0.16, ease: "power2.out", overwrite: true });
+        };
+        const show = (n: number) => {
+          const text = String(n).padStart(digits, " ");
+          digitCells.forEach((cell, i) => {
+            const ch = text[i] === " " ? "" : text[i];
+            if (cell.dataset.now !== ch) {
+              cell.dataset.now = ch;
+              flip(cell, ch);
+            }
+          });
+        };
 
-          const cellTl = gsap.timeline();
-          set(seq[0]);
-          for (let i = 1; i < seq.length; i++) {
-            const d = 0.045 + (i / seq.length) * 0.05; // к концу замедляется
-            cellTl
-              .to(top, { scaleY: 0, duration: d, ease: "power1.in" })
-              .add(() => set(seq[i]))
-              .set(top, { scaleY: 1 })
-              .fromTo(bot, { scaleY: 0 }, { scaleY: 1, duration: d, ease: "power1.out" });
-          }
-          board.add(cellTl, ci * 0.08);
+        // старт: единица, знак спрятан
+        digitCells.forEach((c) => delete c.dataset.now);
+        if (sign) sign.querySelectorAll("i").forEach((g) => (g.textContent = ""));
+        show(1);
+        const finish = () => sign && flip(sign, sign.dataset.flap!);
+        if (target <= 1) {
+          finish();
+          return;
+        }
+
+        // считаем с замедлением к концу; чем больше число, тем дольше (но не дольше 2 с)
+        const state = { n: 1 };
+        tween = gsap.to(state, {
+          n: target,
+          duration: Math.min(2, 0.5 + target * 0.04),
+          delay: 0.25,
+          ease: "power1.out",
+          onUpdate: () => show(Math.round(state.n)),
+          onComplete: () => {
+            show(target);
+            finish();
+          },
         });
       },
       { threshold: 0.6 },
@@ -55,7 +84,7 @@ export function Flap({ value }: { value: string }) {
     return () => {
       cancelled = true;
       io.disconnect();
-      tl?.kill();
+      tween?.kill();
     };
   }, [value]);
 
