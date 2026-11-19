@@ -29,7 +29,7 @@ export function Header() {
       <header className="header" data-scrolled={scrolled || open}>
         <div className="header__bg" />
         <div className="header__inner">
-          <a href="#top" className="header__logo flex items-center gap-3" aria-label={`${site.name} — ${site.brand}, наверх`}>
+          <a href="#top" className="header__logo flex items-center gap-3" aria-label={`${site.name} - ${site.brand}, наверх`}>
             <Seal className="h-10 w-10 lg:h-11 lg:w-11" />
             <span className="font-display text-[30px] leading-none font-black tracking-[0.04em] lg:text-[34px]">
               {site.name}

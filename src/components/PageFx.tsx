@@ -5,8 +5,8 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 // Общие эффекты страницы:
-// • [data-reveal] — блок мягко выезжает, когда входит в экран;
-// • [data-edge]   — клякса-переход между секциями растёт по скроллу.
+// • [data-reveal] - блок мягко выезжает, когда входит в экран;
+// • [data-edge]   - клякса-переход между секциями растёт по скроллу.
 export function PageFx() {
   useEffect(() => {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -38,12 +38,16 @@ export function PageFx() {
       });
     });
 
-    // после загрузки шрифтов и картинок высоты секций меняются — пересчитываем один раз
+    // после загрузки шрифтов и картинок высоты секций меняются - пересчитываем один раз
     ScrollTrigger.config({ ignoreMobileResize: true });
     let timer = 0;
     const refresh = () => {
       clearTimeout(timer);
-      timer = window.setTimeout(() => ScrollTrigger.refresh(), 300);
+      // ждём, пока загрузочный экран уйдёт: пересчёт заметно нагружает телефон
+      timer = window.setTimeout(() => {
+        if (document.querySelector(".preloader")) refresh();
+        else ScrollTrigger.refresh();
+      }, 400);
     };
     document.fonts?.ready.then(refresh);
     if (document.readyState !== "complete") window.addEventListener("load", refresh);

@@ -2,7 +2,7 @@ import { Hanzi } from "./Hanzi";
 import { HanziTitleFx } from "./HanziTitleFx";
 
 // Заголовок раздела: иероглиф пишется по штрихам, когда секция входит в экран,
-// затем русский заголовок выезжает построчно (движение — в HanziTitleFx).
+// затем русский заголовок выезжает построчно (движение - в HanziTitleFx).
 // Без JS и при reduced-motion иероглиф и текст просто показаны.
 export function HanziTitle({
   word,

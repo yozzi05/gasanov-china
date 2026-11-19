@@ -5,18 +5,18 @@ import { site } from "@/content/site";
 
 type RateState = { value: number; date: string } | null;
 
-// Курс юаня ЦБ РФ. Если запрос не удался — цифра просто не показывается.
+// Курс юаня ЦБ РФ. Если запрос не удался - цифра просто не показывается.
 export function RateValue() {
   const [rate, setRate] = useState<RateState>(null);
-  const anchor = useRef<HTMLSpanElement>(null);
+  const anchor = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctrl = new AbortController();
     let timer = 0;
 
     const load = () => {
-      // не ждём дольше 7 секунд: без ответа блок остаётся без цифры
-      timer = window.setTimeout(() => ctrl.abort(), 7000);
+      // не ждём дольше 12 секунд: без ответа блок остаётся без цифры
+      timer = window.setTimeout(() => ctrl.abort(), 12000);
       fetch(site.rate.api, { signal: ctrl.signal })
         .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
         .then((d) => {
@@ -32,25 +32,38 @@ export function RateValue() {
         .finally(() => clearTimeout(timer));
     };
 
-    // курс запрашиваем, когда посетитель подходит к блоку, а не при загрузке страницы
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (!e.isIntersecting) return;
-        io.disconnect();
-        load();
-      },
-      { rootMargin: "1200px 0px" },
-    );
-    if (anchor.current) io.observe(anchor.current);
+    // Курс запрашиваем, когда посетитель подходит к блоку, а не при загрузке страницы.
+    // Запрос уходит один раз: по наблюдателю, а если тот не сработал (так бывает
+    // в Safari на iPhone) - по первому скроллу или через несколько секунд.
+    let started = false;
+    const start = () => {
+      if (started) return;
+      started = true;
+      cleanup();
+      load();
+    };
+    const io =
+      "IntersectionObserver" in window
+        ? new IntersectionObserver(([e]) => e.isIntersecting && start(), { rootMargin: "1500px 0px" })
+        : null;
+    if (io && anchor.current) io.observe(anchor.current);
+    const fallback = window.setTimeout(start, 4000);
+    window.addEventListener("scroll", start, { passive: true, once: true });
+    function cleanup() {
+      io?.disconnect();
+      clearTimeout(fallback);
+      window.removeEventListener("scroll", start);
+    }
 
     return () => {
-      io.disconnect();
+      cleanup();
       clearTimeout(timer);
       ctrl.abort();
     };
   }, []);
 
-  if (!rate) return <span ref={anchor} />;
+  // у «якоря» есть размер: пустой строчный элемент Safari не считает видимым
+  if (!rate) return <div ref={anchor} style={{ width: "100%", height: 1 }} aria-hidden />;
 
   return (
     <div className="rate__value">

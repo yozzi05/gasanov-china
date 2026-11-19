@@ -52,4 +52,4 @@ await sharp(fs.readFileSync("src/app/icon.svg"), { density: 300 })
   .png()
   .toFile("src/app/apple-icon.png");
 
-console.log("og.jpg, apple-icon.png — ok");
+console.log("og.jpg, apple-icon.png - ok");

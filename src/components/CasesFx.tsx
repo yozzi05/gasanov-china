@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-// Горизонтальная лента кейсов по вертикальному скроллу — только на десктопе
+// Горизонтальная лента кейсов по вертикальному скроллу - только на десктопе
 // с мышью. На тач-устройствах остаётся обычная лента, которую листают пальцем.
 export function CasesFx() {
   useEffect(() => {

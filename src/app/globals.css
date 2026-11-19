@@ -577,6 +577,23 @@ body {
   width: 100%;
   height: 100%;
 }
+.preloader__blot {
+  /* красное пятно для телефонов: большой квадрат по центру, растёт через transform */
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100vmax;
+  height: 100vmax;
+  margin: -50vmax 0 0 -50vmax;
+  transform: scale(0);
+  will-change: transform;
+  pointer-events: none;
+}
+.preloader__blot svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
 .preloader__seal {
   position: absolute;
   left: 50%;

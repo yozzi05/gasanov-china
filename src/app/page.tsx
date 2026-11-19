@@ -14,7 +14,7 @@ const tel = site.contacts.phoneHref.replace("tel:", "");
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: `${site.brand} — ${site.person}`,
+  name: `${site.brand} - ${site.person}`,
   description: site.description,
   url: site.url,
   logo: `${site.url}/apple-icon.png`,

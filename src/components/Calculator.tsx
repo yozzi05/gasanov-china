@@ -28,23 +28,23 @@ export function Calculator() {
   const density = ready ? w / v : 0;
   const [pMin, pMax] = plan.pricePerKg;
   const priceText = !ready
-    ? "—"
+    ? "-"
     : pMin === pMax
       ? `≈ ${fmt(w * pMin)} $`
-      : `${fmt(w * pMin)} – ${fmt(w * pMax)} $`;
-  const daysText = `${plan.days[0]}–${plan.days[1]} дней`;
+      : `${fmt(w * pMin)} - ${fmt(w * pMax)} $`;
+  const daysText = `${plan.days[0]}-${plan.days[1]} дней`;
 
   const notes: string[] = [];
-  if (ready && w < plan.minKg) notes.push(`Минимальная партия — ${plan.minKg} кг.`);
+  if (ready && w < plan.minKg) notes.push(`Минимальная партия - ${plan.minKg} кг.`);
   if (ready && density < tariffs.minDensity)
     notes.push(
-      `Плотность ниже ${tariffs.minDensity} кг/м³ — лёгкий объёмный груз считаем индивидуально, цена за кг будет выше.`,
+      `Плотность ниже ${tariffs.minDensity} кг/м³ - лёгкий объёмный груз считаем индивидуально, цена за кг будет выше.`,
     );
   if (ready && w >= tariffs.individualFromKg)
     notes.push(
       "discountFromKg" in plan
         ? `От ${plan.discountFromKg} кг на эту категорию действует скидка.`
-        : `От ${tariffs.individualFromKg} кг — индивидуальный расчёт, цена обычно ниже.`,
+        : `От ${tariffs.individualFromKg} кг - индивидуальный расчёт, цена обычно ниже.`,
     );
 
   const message = ready
@@ -101,7 +101,7 @@ export function Calculator() {
           </div>
           <div>
             <dt>Плотность</dt>
-            <dd>{ready ? `${fmt(density)} кг/м³` : "—"}</dd>
+            <dd>{ready ? `${fmt(density)} кг/м³` : "-"}</dd>
           </div>
           <div>
             <dt>Срок</dt>

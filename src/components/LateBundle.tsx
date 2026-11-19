@@ -12,7 +12,7 @@ import { PageFx } from "./PageFx";
 // Все эффекты, которые ищут свои блоки по data-атрибутам. Грузится из LateFx.
 export function LateBundle() {
   useEffect(() => {
-    // эффекты дочерних компонентов уже запущены — сообщаем загрузочному экрану
+    // эффекты дочерних компонентов уже запущены - сообщаем загрузочному экрану
     window.__g17FxReady = true;
     window.dispatchEvent(new Event("g17:fxready"));
   }, []);

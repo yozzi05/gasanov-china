@@ -3,7 +3,7 @@
 import { useEffect, useState, type ComponentType } from "react";
 
 // Подгружает все «тяжёлые» эффекты страницы (GSAP, плавный скролл, параллакс,
-// маршрут, кейсы) отдельным файлом — после того как на загрузочном экране
+// маршрут, кейсы) отдельным файлом - после того как на загрузочном экране
 // поставлена печать. Так они не мешают первой отрисовке.
 export function LateFx() {
   const [Bundle, setBundle] = useState<ComponentType | null>(null);

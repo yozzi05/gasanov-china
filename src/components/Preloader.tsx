@@ -16,6 +16,12 @@ const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // пятно краски и «прорисовывает» первый экран.
 // Сделано на встроенных анимациях браузера, без библиотек: пока идёт штамп,
 // в фоне догружаются остальные эффекты страницы (LateFx).
+//
+// Два варианта раскрытия:
+// • десктоп - в бумажном листе растёт «дыра»-пятно, сквозь неё виден сайт (SVG-маска);
+// • телефон и планшет - красное пятно краски заливает экран и растворяется.
+//   Здесь двигаются только transform и opacity, их рисует видеокарта, поэтому
+//   анимация не подтормаживает, даже когда страница занята загрузкой скриптов.
 export function Preloader() {
   const root = useRef<HTMLDivElement>(null);
   const [done, setDone] = useState(false);
@@ -36,6 +42,7 @@ export function Preloader() {
       return;
     }
 
+    const light = matchMedia("(max-width: 1023px), (pointer: coarse)").matches;
     const w = window.innerWidth;
     const h = window.innerHeight;
     const cover = (Math.hypot(w, h) / 2 / 38) * 1.08;
@@ -82,7 +89,34 @@ export function Preloader() {
       await Promise.all([wait(480), fxReady()]);
       if (cancelled) return;
 
-      // 3. пятно краски
+      // 3а. телефон и планшет: лёгкий вариант без маски
+      if (light) {
+        const blot = el.querySelector<HTMLElement>("[data-blot]")!;
+        seal.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, delay: 220, easing: "ease-in", fill: "forwards" });
+        await blot.animate(
+          [
+            { transform: "rotate(-20deg) scale(0)" },
+            { transform: "rotate(-8deg) scale(0.5)" },
+          ],
+          { duration: 480, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "forwards" },
+        ).finished;
+        await blot.animate(
+          [
+            { transform: "rotate(-8deg) scale(0.5)" },
+            { transform: "rotate(10deg) scale(3.8)" },
+          ],
+          { duration: 820, easing: "cubic-bezier(0.65, 0, 0.35, 1)", fill: "forwards" },
+        ).finished;
+        if (cancelled) return;
+        // экран залит краской - из неё проявляется сайт
+        loaded();
+        await el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 520, easing: "ease-out", fill: "forwards" })
+          .finished;
+        if (!cancelled) setDone(true);
+        return;
+      }
+
+      // 3б. десктоп: пятно-«дыра» в бумажном листе
       drops.forEach((d, i) =>
         d.animate([{ transform: "scale(0)" }, { transform: "scale(1)" }], {
           duration: 700,
@@ -117,7 +151,7 @@ export function Preloader() {
       ).finished;
       if (!cancelled) setDone(true);
     })().catch(() => {
-      // на случай сбоя анимации — просто показываем сайт
+      // на случай сбоя анимации - просто показываем сайт
       loaded();
       setDone(true);
     });
@@ -138,7 +172,7 @@ export function Preloader() {
             <g data-center>
               <g data-hole fill="#000" style={{ transform: "scale(0)" }}>
                 <path d="M2-41c14-3 25 4 33 13 9 10 13 22 8 34-4 11-3 21-14 28-12 8-26 9-39 4-11-4-22-9-27-21-5-13-6-27 2-38 8-12 23-17 37-20z" />
-                {/* наплывы краски по краю — растут с задержкой, край получается живым */}
+                {/* наплывы краски по краю - растут с задержкой, край получается живым */}
                 <circle data-drop cx="34" cy="-26" r="19" />
                 <circle data-drop cx="-36" cy="22" r="21" />
                 <circle data-drop cx="30" cy="32" r="17" />
@@ -159,6 +193,24 @@ export function Preloader() {
         </defs>
         <rect width="100%" height="100%" fill="#F4EFE6" mask="url(#preloader-mask)" />
       </svg>
+      <div className="preloader__blot" data-blot>
+        <svg viewBox="-100 -100 200 200" fill="#C8102E">
+          <path d="M2-41c14-3 25 4 33 13 9 10 13 22 8 34-4 11-3 21-14 28-12 8-26 9-39 4-11-4-22-9-27-21-5-13-6-27 2-38 8-12 23-17 37-20z" />
+          <circle cx="34" cy="-26" r="19" />
+          <circle cx="-36" cy="22" r="21" />
+          <circle cx="30" cy="32" r="17" />
+          <circle cx="-34" cy="-24" r="16" />
+          <circle cx="44" cy="4" r="14" />
+          <circle cx="-6" cy="-44" r="15" />
+          <circle cx="-4" cy="44" r="16" />
+          <circle cx="62" cy="-34" r="5" />
+          <circle cx="-64" cy="38" r="6" />
+          <circle cx="50" cy="52" r="4" />
+          <circle cx="-66" cy="-28" r="3.5" />
+          <circle cx="-14" cy="-70" r="4" />
+          <circle cx="10" cy="72" r="3" />
+        </svg>
+      </div>
       <div className="preloader__seal" data-seal>
         <Seal className="h-full w-full" />
       </div>

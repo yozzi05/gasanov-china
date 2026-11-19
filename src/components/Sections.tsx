@@ -64,7 +64,7 @@ export function Services() {
           ))}
           <li className="service service--cta" data-reveal style={d(2)}>
             <p className="service__title">Не знаете, с чего начать?</p>
-            <p className="service__text">Напишите, что хотите привезти, — подскажу, как лучше.</p>
+            <p className="service__text">Напишите, что хотите привезти, - подскажу, как лучше.</p>
             <InkButton href={whatsappLink()} variant="paper" external>
               <WhatsAppIcon className="h-5 w-5" />
               Написать Зауру
@@ -105,7 +105,7 @@ export function Why() {
 export function CalcSection() {
   const { tariffs, calc } = site;
   const price = (p: readonly [number, number] | readonly number[]) =>
-    p[0] === p[1] ? `${String(p[0]).replace(".", ",")} $/кг` : `${String(p[0]).replace(".", ",")}–${String(p[1]).replace(".", ",")} $/кг`;
+    p[0] === p[1] ? `${String(p[0]).replace(".", ",")} $/кг` : `${String(p[0]).replace(".", ",")}-${String(p[1]).replace(".", ",")} $/кг`;
   return (
     <section id="calc" className="calc-section grain" aria-label="Калькулятор доставки">
       <InkEdge color={PAPER} />
@@ -120,7 +120,7 @@ export function CalcSection() {
               <li key={p.id}>
                 <span className="tariffs__name">{p.label}</span>
                 <span className="tariffs__days">
-                  {p.days[0]}–{p.days[1]} дней
+                  {p.days[0]}-{p.days[1]} дней
                 </span>
                 <span className="tariffs__price">{price(p.pricePerKg)}</span>
               </li>
@@ -242,7 +242,7 @@ export function Reviews() {
           </li>
         ))}
         <li className="review review--more" data-reveal style={d(3)}>
-          <p>Больше отзывов и свежих отправок — в Telegram-канале</p>
+          <p>Больше отзывов и свежих отправок - в Telegram-канале</p>
           <InkButton href={site.contacts.telegramChannel} variant="paper" external>
             <TelegramIcon className="h-5 w-5" />
             Открыть канал
@@ -293,7 +293,7 @@ export function Footer() {
       <InkEdge color={INK} variant={1} />
       <div className="wrap">
         <div className="footer__top">
-          <a href="#top" className="flex items-center gap-3" aria-label={`${site.name} — наверх`}>
+          <a href="#top" className="flex items-center gap-3" aria-label={`${site.name} - наверх`}>
             <Seal className="h-12 w-12" />
             <span className="font-display text-4xl leading-none font-black tracking-[0.04em]">{site.name}</span>
           </a>
@@ -316,8 +316,8 @@ export function Footer() {
           </div>
           <div>
             <h3>Где мы</h3>
-            <p>Офис — {contacts.office}</p>
-            <p>Склад — {contacts.warehouse}</p>
+            <p>Офис - {contacts.office}</p>
+            <p>Склад - {contacts.warehouse}</p>
           </div>
           <nav aria-label="Разделы сайта">
             <h3>Разделы</h3>
