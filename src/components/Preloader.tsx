@@ -20,8 +20,8 @@ const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // Два варианта раскрытия:
 // • десктоп - в бумажном листе растёт «дыра»-пятно, сквозь неё виден сайт (SVG-маска);
 // • телефон и планшет - красное пятно краски заливает экран и растворяется.
-//   Здесь двигаются только transform и opacity, их рисует видеокарта, поэтому
-//   анимация не подтормаживает, даже когда страница занята загрузкой скриптов.
+//   Это CSS-анимации только на transform и opacity: их ведёт видеокарта,
+//   и они не подтормаживают, даже когда страница занята загрузкой скриптов.
 export function Preloader() {
   const root = useRef<HTMLDivElement>(null);
   const [done, setDone] = useState(false);
@@ -42,7 +42,40 @@ export function Preloader() {
       return;
     }
 
+    const fxReady = () =>
+      new Promise<void>((resolve) => {
+        if (window.__g17FxReady) return resolve();
+        window.addEventListener("g17:fxready", () => resolve(), { once: true });
+        setTimeout(resolve, 2500); // не держим экран, если эффекты так и не загрузились
+      });
+
+    // Телефон и планшет. Штамп и пятно здесь - обычные CSS-анимации (см. globals.css):
+    // браузер запускает их сам с первой отрисовки и ведёт на видеокарте, без участия
+    // скриптов. Поэтому они идут ровно, даже когда страница занята загрузкой.
+    // Скрипту остаётся дождаться конца и растворить экран.
     const light = matchMedia("(max-width: 1023px), (pointer: coarse)").matches;
+    if (light) {
+      const blot = el.querySelector<HTMLElement>("[data-blot]")!;
+      (async () => {
+        await wait(550);
+        announce("g17:intro"); // догружаем эффекты страницы, пока идёт анимация
+        const running = blot.getAnimations().map((anim) => anim.finished.catch(() => undefined));
+        await Promise.all([...running, fxReady()]);
+        if (cancelled) return;
+        // экран залит краской - из неё проявляется сайт
+        loaded();
+        await el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 520, easing: "ease-out", fill: "forwards" })
+          .finished;
+        if (!cancelled) setDone(true);
+      })().catch(() => {
+        loaded();
+        setDone(true);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+
     const w = window.innerWidth;
     const h = window.innerHeight;
     const cover = (Math.hypot(w, h) / 2 / 38) * 1.08;
@@ -54,13 +87,6 @@ export function Preloader() {
     // Пятно стоит строго в центре экрана и растёт из своей середины
     center.setAttribute("transform", `translate(${w / 2} ${h / 2})`);
     drops.forEach((d) => (d.style.transformOrigin = `${d.getAttribute("cx")}px ${d.getAttribute("cy")}px`));
-
-    const fxReady = () =>
-      new Promise<void>((resolve) => {
-        if (window.__g17FxReady) return resolve();
-        window.addEventListener("g17:fxready", () => resolve(), { once: true });
-        setTimeout(resolve, 2500); // не держим экран, если эффекты так и не загрузились
-      });
 
     (async () => {
       // 1. штамп
@@ -89,34 +115,7 @@ export function Preloader() {
       await Promise.all([wait(480), fxReady()]);
       if (cancelled) return;
 
-      // 3а. телефон и планшет: лёгкий вариант без маски
-      if (light) {
-        const blot = el.querySelector<HTMLElement>("[data-blot]")!;
-        seal.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, delay: 220, easing: "ease-in", fill: "forwards" });
-        await blot.animate(
-          [
-            { transform: "rotate(-20deg) scale(0)" },
-            { transform: "rotate(-8deg) scale(0.5)" },
-          ],
-          { duration: 480, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "forwards" },
-        ).finished;
-        await blot.animate(
-          [
-            { transform: "rotate(-8deg) scale(0.5)" },
-            { transform: "rotate(10deg) scale(3.8)" },
-          ],
-          { duration: 820, easing: "cubic-bezier(0.65, 0, 0.35, 1)", fill: "forwards" },
-        ).finished;
-        if (cancelled) return;
-        // экран залит краской - из неё проявляется сайт
-        loaded();
-        await el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 520, easing: "ease-out", fill: "forwards" })
-          .finished;
-        if (!cancelled) setDone(true);
-        return;
-      }
-
-      // 3б. десктоп: пятно-«дыра» в бумажном листе
+      // 3. пятно-«дыра» в бумажном листе
       drops.forEach((d, i) =>
         d.animate([{ transform: "scale(0)" }, { transform: "scale(1)" }], {
           duration: 700,

@@ -578,16 +578,68 @@ body {
   height: 100%;
 }
 .preloader__blot {
-  /* красное пятно для телефонов: большой квадрат по центру, растёт через transform */
+  /* красное пятно для телефонов: квадрат по центру, растёт через transform */
+  display: none;
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 100vmax;
-  height: 100vmax;
-  margin: -50vmax 0 0 -50vmax;
+  width: 50vmax;
+  height: 50vmax;
+  margin: -25vmax 0 0 -25vmax;
   transform: scale(0);
   will-change: transform;
   pointer-events: none;
+}
+
+/* Телефон и планшет: загрузочный экран целиком на CSS-анимациях.
+   Условие должно совпадать с проверкой light в Preloader.tsx. */
+@media (max-width: 1023px), (pointer: coarse) {
+  .preloader {
+    background: var(--color-paper);
+  }
+  .preloader__sheet {
+    display: none;
+  }
+  .preloader__blot {
+    display: block;
+    animation: pre-blot 1.25s 0.85s cubic-bezier(0.5, 0, 0.3, 1) both;
+  }
+  .preloader__seal {
+    animation:
+      pre-stamp 0.36s 0.12s cubic-bezier(0.9, 0, 1, 0.6) both,
+      pre-seal-out 0.25s 1.05s ease-in forwards;
+  }
+  /* тени-фильтры на движущихся слоях дорого обходятся телефону */
+  .hero__photo img,
+  .lantern__link svg {
+    filter: none;
+  }
+}
+@keyframes pre-stamp {
+  from {
+    opacity: 0;
+    transform: scale(2.6) rotate(-16deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(-5deg);
+  }
+}
+@keyframes pre-seal-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes pre-blot {
+  0% {
+    transform: rotate(-20deg) scale(0);
+  }
+  35% {
+    transform: rotate(-8deg) scale(1);
+  }
+  100% {
+    transform: rotate(10deg) scale(7.8);
+  }
 }
 .preloader__blot svg {
   display: block;
