@@ -1,78 +1,99 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { site } from "@/content/site";
+import baked from "@/content/rate.json";
 
-type RateState = { value: number; date: string } | null;
+type Rate = { value: number; date: string }; // date: ГГГГ-ММ-ДД
 
-// Курс юаня ЦБ РФ. Если запрос не удался - цифра просто не показывается.
+const MONTHS = [
+  "января", "февраля", "марта", "апреля", "мая", "июня",
+  "июля", "августа", "сентября", "октября", "ноября", "декабря",
+];
+const formatDate = (iso: string) => {
+  const [, m, d] = iso.split("-").map(Number);
+  return `${d} ${MONTHS[m - 1]}`;
+};
+const valid = (r: unknown): r is Rate =>
+  !!r && typeof (r as Rate).value === "number" && (r as Rate).value > 0 && /^\d{4}-\d{2}-\d{2}/.test((r as Rate).date);
+
+const CACHE_KEY = "g17-cny-rate";
+
+// Курс юаня ЦБ РФ.
+// Сервис с курсом отвечает нестабильно, поэтому цифра не зависит от него напрямую:
+// 1) в страницу уже вшит курс на момент сборки сайта (src/content/rate.json);
+// 2) браузер пробует получить свежий курс и подменяет цифру, если он новее;
+// 3) удачный ответ запоминается на устройстве посетителя до следующего раза.
+// Рядом всегда стоит дата, на которую действует показанный курс.
 export function RateValue() {
-  const [rate, setRate] = useState<RateState>(null);
-  const anchor = useRef<HTMLDivElement>(null);
+  const [rate, setRate] = useState<Rate | null>(valid(baked) ? baked : null);
 
   useEffect(() => {
-    const ctrl = new AbortController();
-    let timer = 0;
+    const newer = (r: Rate) => setRate((cur) => (!cur || r.date >= cur.date ? r : cur));
 
-    const load = () => {
-      // не ждём дольше 12 секунд: без ответа блок остаётся без цифры
-      timer = window.setTimeout(() => ctrl.abort(), 12000);
-      fetch(site.rate.api, { signal: ctrl.signal })
-        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-        .then((d) => {
-          const cny = d?.Valute?.CNY;
-          const value = cny ? cny.Value / (cny.Nominal || 1) : NaN;
-          if (!Number.isFinite(value) || value <= 0) return;
-          const date = new Date(d.Date).toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
-          setRate({ value, date });
-        })
-        .catch(() => {
-          /* блок остаётся без цифры */
-        })
-        .finally(() => clearTimeout(timer));
-    };
-
-    // Курс запрашиваем, когда посетитель подходит к блоку, а не при загрузке страницы.
-    // Запрос уходит один раз: по наблюдателю, а если тот не сработал (так бывает
-    // в Safari на iPhone) - по первому скроллу или через несколько секунд.
-    let started = false;
-    const start = () => {
-      if (started) return;
-      started = true;
-      cleanup();
-      load();
-    };
-    const io =
-      "IntersectionObserver" in window
-        ? new IntersectionObserver(([e]) => e.isIntersecting && start(), { rootMargin: "1500px 0px" })
-        : null;
-    if (io && anchor.current) io.observe(anchor.current);
-    const fallback = window.setTimeout(start, 4000);
-    window.addEventListener("scroll", start, { passive: true, once: true });
-    function cleanup() {
-      io?.disconnect();
-      clearTimeout(fallback);
-      window.removeEventListener("scroll", start);
+    try {
+      const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+      if (valid(cached)) newer(cached);
+    } catch {
+      /* хранилище недоступно - не страшно */
     }
 
+    let cancelled = false;
+    let ctrl: AbortController | null = null;
+
+    const once = async () => {
+      ctrl = new AbortController();
+      const current = ctrl;
+      const timer = window.setTimeout(() => current.abort(), 12000);
+      try {
+        const r = await fetch(site.rate.api, { signal: current.signal });
+        if (!r.ok) throw new Error(String(r.status));
+        const d = await r.json();
+        const cny = d?.Valute?.CNY;
+        const fresh = { value: cny ? cny.Value / (cny.Nominal || 1) : NaN, date: String(d.Date).slice(0, 10) };
+        if (!valid(fresh)) throw new Error("bad data");
+        return fresh;
+      } finally {
+        clearTimeout(timer);
+      }
+    };
+
+    const update = async () => {
+      for (let attempt = 0; attempt < 2 && !cancelled; attempt++) {
+        try {
+          const fresh = await once();
+          if (cancelled) return;
+          newer(fresh);
+          try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(fresh));
+          } catch {
+            /* не удалось запомнить - не страшно */
+          }
+          return;
+        } catch {
+          /* остаётся уже показанный курс */
+        }
+      }
+    };
+    // не мешаем загрузке страницы: обновляем курс чуть позже
+    const start = window.setTimeout(update, 2500);
+
     return () => {
-      cleanup();
-      clearTimeout(timer);
-      ctrl.abort();
+      cancelled = true;
+      clearTimeout(start);
+      ctrl?.abort();
     };
   }, []);
 
-  // у «якоря» есть размер: пустой строчный элемент Safari не считает видимым
-  if (!rate) return <div ref={anchor} style={{ width: "100%", height: 1 }} aria-hidden />;
+  if (!rate) return null;
 
   return (
     <div className="rate__value">
       <p className="rate__figure">
-        <span className="rate__unit">1 ¥ =</span>{" "}
-        {rate.value.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        <span className="rate__unit">1 ¥ =</span> {rate.value.toFixed(2).replace(".", ",")}
         <span className="rate__unit"> ₽</span>
       </p>
-      <p className="rate__date">Курс ЦБ РФ на {rate.date}</p>
+      <p className="rate__date">Курс ЦБ РФ на {formatDate(rate.date)}</p>
     </div>
   );
 }

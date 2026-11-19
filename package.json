@@ -11,7 +11,9 @@
     "hanzi": "node scripts/build-hanzi.mjs",
     "og": "node scripts/build-og.mjs",
     "serve": "node scripts/serve-out.mjs",
-    "art": "node scripts/build-art.mjs"
+    "art": "node scripts/build-art.mjs",
+    "rate": "node scripts/fetch-rate.mjs",
+    "prebuild": "node scripts/fetch-rate.mjs"
   },
   "dependencies": {
     "gsap": "^3.15.1",

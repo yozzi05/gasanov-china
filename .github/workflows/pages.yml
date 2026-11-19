@@ -5,6 +5,9 @@ name: GitHub Pages
 on:
   push:
     branches: [master]
+  # раз в день пересобираем, чтобы в страницу попадал свежий курс юаня
+  schedule:
+    - cron: "17 13 * * *"
   workflow_dispatch:
 
 permissions:
