@@ -1,0 +1,54 @@
+{
+  "case-10-tonn": {
+    "width": 700,
+    "height": 1236
+  },
+  "case-2717": {
+    "width": 700,
+    "height": 1244
+  },
+  "case-box": {
+    "width": 568,
+    "height": 966
+  },
+  "case-crate": {
+    "width": 700,
+    "height": 932
+  },
+  "case-okna": {
+    "width": 700,
+    "height": 1225
+  },
+  "case-pallet": {
+    "width": 565,
+    "height": 961
+  },
+  "case-stanok": {
+    "width": 496,
+    "height": 800
+  },
+  "case-truck": {
+    "width": 912,
+    "height": 1724
+  },
+  "review-1": {
+    "width": 584,
+    "height": 778
+  },
+  "zaur-about": {
+    "width": 1680,
+    "height": 2520
+  },
+  "zaur-cutout": {
+    "width": 1014,
+    "height": 1680
+  },
+  "zaur-portrait": {
+    "width": 1246,
+    "height": 1297
+  },
+  "zaur-wall": {
+    "width": 2410,
+    "height": 1330
+  }
+}

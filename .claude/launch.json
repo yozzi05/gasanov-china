@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "gasanov-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "3217"],
+      "port": 3217
+    },
+    {
+      "name": "gasanov-static",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "3218", "--directory", "out"],
+      "port": 3218
+    }
+  ]
+}

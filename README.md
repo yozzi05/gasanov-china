@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# G17 · Заур Гасанов — сайт доставки из Китая
 
-## Getting Started
+Одностраничный сайт на Next.js (статический экспорт), Tailwind CSS, GSAP + ScrollTrigger, Lenis и hanzi-writer.
 
-First, run the development server:
+## Команды
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+| Команда | Что делает |
+| --- | --- |
+| `npm run dev` | Разработка, http://localhost:3000 |
+| `npm run build` | Готовый сайт в папке `out/` — её и загружают на хостинг |
+| `npm run serve` | Локальный просмотр `out/` со сжатием, http://localhost:3219 |
+| `npm run images` | Пересобрать картинки из `assets/originals` в `public/images` (AVIF + WebP) |
+| `npm run art` | Перерисовать дерево первого экрана (`public/art`) |
+| `npm run hanzi` | Пересобрать контуры иероглифов (`src/content/hanzi-data.json`) |
+| `npm run og` | Пересобрать обложку для соцсетей (`public/og.jpg`) и иконку |
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Где что править
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Тексты, контакты, тарифы, ссылки** — `src/content/site.ts`. Места с пометкой «УТОЧНИТЬ» нужно подтвердить.
+- **Фото** — положить исходник в `assets/originals`, запустить `npm run images`, указать имя файла в `site.ts`.
+- **Цвета и шрифты** — блок `@theme` в начале `src/app/globals.css`.
+- **Что осталось уточнить у клиента** — `TODO.md`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Как устроено
 
-## Learn More
+- `src/app/page.tsx` — порядок блоков на странице.
+- `src/components/Hero.tsx`, `Route.tsx`, `Cases.tsx`, `Sections.tsx` — разметка блоков.
+- `src/components/Preloader.tsx` — загрузочный экран (печать и пятно краски).
+- `src/components/LateBundle.tsx` — все скролл-эффекты; подгружаются отдельным файлом после печати,
+  чтобы не мешать первой отрисовке.
+- При `prefers-reduced-motion` анимации отключены: всё показано сразу, «Маршрут» превращается в обычный список.
 
-To learn more about Next.js, take a look at the following resources:
+## Размещение
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Содержимое `out/` — обычные статические файлы, подойдёт любой хостинг. Желательны HTTPS, HTTP/2 и сжатие
+(gzip или brotli); файлам из `/_next/static/` и `/images/` можно ставить долгий кэш.

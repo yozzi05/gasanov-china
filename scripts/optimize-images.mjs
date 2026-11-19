@@ -1,0 +1,60 @@
+// Нарезает исходники из assets/originals в public/images: AVIF + WebP нужных ширин.
+// Запуск: npm run images
+import sharp from "sharp";
+import fs from "node:fs";
+import path from "node:path";
+
+const SRC = "assets/originals";
+const OUT = "public/images";
+const WIDTHS = [96, 200, 360, 640, 828, 1080, 1440, 1920];
+
+// trim: обрезать прозрачные поля у вырезанных фото
+const OPTIONS = {
+  "zaur-cutout": { trim: true, max: 1080 },
+  "zaur-portrait": { max: 828 },
+  "zaur-about": { max: 1440 },
+  // у скриншота отзыва обрезаем жёлтую рамку старого сайта
+  "review-1": { extract: { left: 58, top: 228, width: 584, height: 778 } },
+};
+
+fs.mkdirSync(OUT, { recursive: true });
+const manifest = {};
+
+for (const file of fs.readdirSync(SRC).sort()) {
+  const name = path.parse(file).name;
+  const opt = OPTIONS[name] ?? {};
+  let img = sharp(path.join(SRC, file));
+  if (opt.trim) img = sharp(await img.trim().toBuffer());
+  if (opt.extract) img = sharp(await img.extract(opt.extract).toBuffer());
+  const meta = await img.metadata();
+  manifest[name] = { width: meta.width, height: meta.height };
+  const maxW = Math.min(opt.max ?? 1920, meta.width);
+
+  for (const w of WIDTHS) {
+    const target = Math.min(w, maxW);
+    const base = img.clone().resize({ width: target, withoutEnlargement: true });
+    await base.clone().avif({ quality: 52, effort: 6 }).toFile(path.join(OUT, `${name}-${w}.avif`));
+    await base.clone().webp({ quality: 74, effort: 5 }).toFile(path.join(OUT, `${name}-${w}.webp`));
+  }
+  console.log(name, `${meta.width}x${meta.height}`);
+}
+
+// Бумажное зерно: маленькая бесшовная плитка шума
+{
+  const S = 96;
+  const buf = Buffer.alloc(S * S * 4);
+  let seed = 17;
+  const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+  for (let i = 0; i < S * S; i++) {
+    const v = rnd() > 0.5 ? 255 : 0;
+    buf[i * 4] = buf[i * 4 + 1] = buf[i * 4 + 2] = v;
+    buf[i * 4 + 3] = Math.floor(rnd() * 15);
+  }
+  fs.mkdirSync("public/textures", { recursive: true });
+  await sharp(buf, { raw: { width: S, height: S, channels: 4 } })
+    .png({ compressionLevel: 9, palette: true })
+    .toFile("public/textures/grain.png");
+}
+
+fs.writeFileSync("src/content/images.json", JSON.stringify(manifest, null, 2) + "\n");
+console.log("ok");
