@@ -27,28 +27,16 @@ export function Hero() {
           </div>
         </div>
 
-        {/* Фамилия: светлая копия видна везде, кроме проёма, красная - только в проёме.
-            Маски привязаны к стене (6 px), сама надпись смещается на 9 px (6 + 3). */}
-        {(["light", "red"] as const).map((tone) => (
-          <div key={tone} className={`scene__name scene__name--${tone}`} data-mouse="6" aria-hidden>
-            <div data-mouse="3">
-              <div className="hero__name">
-                {[...site.name].map((ch, i) => (
-                  <span key={i} className="hero__letter-mask">
-                    <span className="hero__letter" data-letter={i}>
-                      {ch}
-                    </span>
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
-
-        <div className="scene__roof">
-          <div data-mouse="6">
-            <span className="scene__roof-shadow" />
-            <Pic name="scene-roof" alt="" sizes={WALL_SIZES} />
+        {/* Фамилия: перед крышей (она часть стены), за фигурой и деревьями */}
+        <div className="scene__name" data-mouse="9" aria-hidden>
+          <div className="hero__name">
+            {[...site.name].map((ch, i) => (
+              <span key={i} className="hero__letter-mask">
+                <span className="hero__letter" data-letter={i}>
+                  {ch}
+                </span>
+              </span>
+            ))}
           </div>
         </div>
 

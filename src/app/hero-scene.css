@@ -11,6 +11,8 @@
   --scene-w: calc(var(--scene-h) * 1672 / 941);
   /* на сколько сцена выступает за левый и правый край экрана */
   --edge: calc((var(--scene-w) - 100vw) / 2);
+  /* на сколько сцена поднята (телефон: чтобы над текстом было видно больше фигуры) */
+  --lift: 0px;
 }
 
 .scene {
@@ -20,12 +22,13 @@
   top: 50%;
   width: var(--scene-w);
   height: var(--scene-h);
-  margin: calc(var(--scene-h) / -2) 0 0 calc(var(--scene-w) / -2);
+  margin: calc(var(--scene-h) / -2 - var(--lift)) 0 0 calc(var(--scene-w) / -2);
   overflow: hidden;
   pointer-events: none;
 }
 .scene--front {
   z-index: 1;
+  margin-top: calc(var(--scene-h) / -2);
 }
 .scene picture,
 .scene img {
@@ -47,63 +50,23 @@
   inset: calc(100% * -20 / 941) calc(100% * -32 / 1672);
 }
 
-/* 2. Фамилия - та же надпись, что в основной версии (размер, шрифт и место по вертикали
-      из .hero__name), но слоем сцены: между стеной и крышей.
-      Две копии: светлая обрезана по маске «всё, кроме проёма», красная - по маске проёма.
-      Проём в сцене: 550-1100 px по ширине, до 830 px по высоте; верх маски (270 px) спрятан за крышей. Маски лежат на обёртках,
-      которые смещаются вместе со стеной. */
-.scene__name,
-.scene__name > div {
+/* 2. Фамилия - надпись из основной версии (шрифт, цвет и место по вертикали из
+      .hero__name), но слоем сцены: перед стеной с крышей, за фигурой и деревьями.
+      Размер чуть меньше основной версии: 28vw вместо 31.2vw (от 768 px - 28.7vw вместо 31.9vw). */
+.scene__name {
   position: absolute;
   inset: 0;
-}
-.scene__name--light {
-  clip-path: polygon(
-    evenodd,
-    0 0,
-    100% 0,
-    100% 100%,
-    0 100%,
-    0 0,
-    32.9% 28.7%,
-    32.9% 88.2%,
-    65.79% 88.2%,
-    65.79% 28.7%,
-    32.9% 28.7%
-  );
-}
-.scene__name--red {
-  clip-path: inset(28.7% 34.21% 11.8% 32.9%);
 }
 .scene .hero__name {
   z-index: auto;
   left: var(--edge);
   right: auto;
   width: 100vw;
-  top: calc((var(--scene-h) - var(--hero-h)) / 2 + var(--header-h) + 0.5svh);
-}
-.scene__name--red .hero__name {
-  color: var(--color-lacquer);
+  top: calc((var(--scene-h) - var(--hero-h)) / 2 + var(--lift) + var(--header-h) + 0.5svh);
+  font-size: 28vw;
 }
 
-/* 3. Крыша: вырезана из стены и стоит на том же месте, смещается вместе со стеной.
-      Под ней мягкая тень вниз - на буквы и стену. */
-.scene__roof {
-  position: absolute;
-  inset: 0;
-}
-.scene__roof-shadow {
-  position: absolute;
-  left: 30.3%;
-  right: 31.2%;
-  top: 29.5%;
-  height: 6.5%;
-  background: linear-gradient(180deg, rgba(17, 16, 16, 0.5) 0%, rgba(17, 16, 16, 0.22) 45%, rgba(17, 16, 16, 0) 100%);
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
-  mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
-}
-
-/* 4. Заур: центр на 50% ширины, голова на 35% высоты, подошва на 96% */
+/* 3. Заур: центр на 50% ширины, голова на 35% высоты, подошва на 96% */
 .scene__zaur {
   position: absolute;
   left: 50%;
@@ -127,7 +90,7 @@
   background: radial-gradient(closest-side, rgba(17, 16, 16, 0.5), rgba(17, 16, 16, 0.22) 55%, rgba(17, 16, 16, 0));
 }
 
-/* 5. Деревья: два независимых слоя, увеличены на 3% от своего угла привязки
+/* 4. Деревья: два независимых слоя, увеличены на 3% от своего угла привязки
       (левое - от левого нижнего, правое - от правого нижнего) и сдвинуты за край сцены
       на амплитуду смещения, чтобы при движении не открывался срез картинки. */
 .scene__tree {
@@ -146,7 +109,7 @@
   aspect-ratio: 825 / 941;
 }
 
-/* 6. Фонари на золотых нитях. Нить начинается выше края сцены - запас на смещение. */
+/* 5. Фонари на золотых нитях. Нить начинается выше края сцены - запас на смещение. */
 .scene__lanterns {
   position: absolute;
   inset: 0;
@@ -193,7 +156,7 @@
   filter: none;
 }
 
-/* 7. Лепестки: холст больше экрана на двойную амплитуду смещения */
+/* 6. Лепестки: холст больше экрана на двойную амплитуду смещения */
 .hero__petals-layer {
   position: absolute;
   z-index: 2;
@@ -224,7 +187,8 @@
     --hero-h: max(100svh, 620px);
   }
   .scene .hero__name {
-    top: calc((var(--scene-h) - var(--hero-h)) / 2 + var(--header-h) + 1svh);
+    top: calc((var(--scene-h) - var(--hero-h)) / 2 + var(--lift) + var(--header-h) + 1svh);
+    font-size: 28.7vw;
   }
   /* Подзаголовок и кнопки сдвинуты влево с камней: правый край блока стоит
      на 87% ширины сцены - у левого края большого камня */
@@ -263,6 +227,7 @@
 
 @media (max-width: 767px) {
   .hero--scene {
+    --lift: 9svh;
     --tree-out-l: 0.68;
     --tree-out-r: 0.5;
   }
