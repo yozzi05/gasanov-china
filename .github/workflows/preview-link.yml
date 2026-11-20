@@ -1,0 +1,28 @@
+# Когда открывается pull request из ветки fix/<имя>, оставляет в нём ссылку на предпросмотр.
+name: Ссылка на предпросмотр
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  comment:
+    if: startsWith(github.head_ref, 'fix/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Написать ссылку в pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.head_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          slug="$(echo "${HEAD_REF#fix/}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g')"
+          url="https://${OWNER}.github.io/${REPO#*/}/preview/${slug}/"
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body "Предпросмотр этой ветки: ${url}
+
+          Ссылка начинает работать через 2-3 минуты после отправки ветки и обновляется при каждом новом коммите. После слияния или удаления ветки предпросмотр исчезает."
