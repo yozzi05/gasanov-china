@@ -1,4 +1,5 @@
 import { site, whatsappLink } from "@/content/site";
+import { BASE_PATH } from "@/lib/basePath";
 import { Hanzi, HanziWord } from "./Hanzi";
 import { InkTree } from "./InkTree";
 import { Lantern } from "./Lantern";
@@ -8,10 +9,12 @@ import { Petals } from "./Petals";
 
 // Первый экран. Разметка статичная (рендерится на сервере),
 // всё движение подключает HeroFx.
+// Эксперимент: портрет zaur-smile вместо прежнего фото zaur-cutout;
+// его размеры - в src/app/hero-portrait.css.
 export function Hero() {
   const { hero } = site;
   return (
-    <section id="top" className="hero grain" data-hero>
+    <section id="top" className="hero hero--portrait grain" data-hero>
       <div className="hero__bg" />
 
       <div className="hero__watermark" data-scroll="-10">
@@ -49,10 +52,13 @@ export function Hero() {
       <div className="hero__photo" data-scroll="9">
         <div data-mouse="-12">
           <div className="h-full" data-photo>
+            {/* лёгкая тень портрета: лежит на буквах, чуть ниже и левее самого фото */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="hero__cast" src={`${BASE_PATH}/images/zaur-smile-shadow.webp`} alt="" aria-hidden decoding="async" />
             <Pic
-              name="zaur-cutout"
+              name="zaur-smile"
               alt="Заур Гасанов, основатель G17"
-              sizes="(max-width: 767px) 86vw, 44vw"
+              sizes="(max-width: 767px) 96vw, 34vw"
               eager
             />
           </div>

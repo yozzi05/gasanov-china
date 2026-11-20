@@ -50,5 +50,9 @@
   "zaur-wall": {
     "width": 2410,
     "height": 1330
+  },
+  "zaur-smile": {
+    "width": 1600,
+    "height": 1818
   }
 }

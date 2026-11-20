@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# временная папка: файлы, которые больше не нужны и ждут удаления
+/_to_delete/
