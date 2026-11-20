@@ -13,14 +13,16 @@ const OPTIONS = {
   "zaur-cutout": { trim: true, max: 1080 },
   "zaur-portrait": { max: 828 },
   "zaur-about": { max: 1440 },
-  // Сцена первого экрана (1672×941). Деревья не обрезаем: левое прижато к левому
-  // и нижнему краю сцены, правое - к правому и нижнему.
-  // extend: поля, достроенные зеркальным отражением края. Они лежат за краем сцены и нужны
-  // только как запас, когда слой смещается за курсором; масштаб и положение слоя не меняются.
-  // Те же числа стоят в src/app/hero-scene.css.
+  // Сцена первого экрана (1672×941). Деревья и крышу не обрезаем: левое дерево прижато
+  // к левому и нижнему краю сцены, правое - к правому и нижнему, крыша стоит на своём
+  // месте поверх стены.
+  // extend: поля стены, достроенные зеркальным отражением края. Они лежат за краем сцены
+  // и нужны как запас, когда слой смещается за курсором. Те же числа - в src/app/hero-scene.css.
   "scene-wall": { extend: { left: 32, right: 32, top: 20, bottom: 20 } },
-  "scene-trees-left": { extend: { left: 96, top: 48, bottom: 48 } },
-  "scene-trees-right": { extend: { right: 96, top: 48, bottom: 48 } },
+  // clearBelow: под карнизом в вырезке остались тёмные крошки тени - убираем всё ниже 294 px
+  "scene-roof": { clearBelow: 294 },
+  "scene-trees-left": {},
+  "scene-trees-right": {},
   "scene-lantern": { trim: true, max: 200 },
   "scene-lantern-2": { trim: true, max: 200 },
   "zaur-walk": { trim: true, max: 640 },
@@ -37,6 +39,11 @@ for (const file of fs.readdirSync(SRC).sort()) {
   let img = sharp(path.join(SRC, file));
   if (opt.trim) img = sharp(await img.trim().toBuffer());
   if (opt.extract) img = sharp(await img.extract(opt.extract).toBuffer());
+  if (opt.clearBelow) {
+    const { data, info } = await img.ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    for (let i = opt.clearBelow * info.width * 4 + 3; i < data.length; i += 4) data[i] = 0;
+    img = sharp(await sharp(data, { raw: info }).png().toBuffer());
+  }
   if (opt.extend) img = sharp(await img.extend({ ...opt.extend, extendWith: "mirror" }).png().toBuffer());
   const meta = await img.metadata();
   manifest[name] = { width: meta.width, height: meta.height };

@@ -1,11 +1,16 @@
 import { site, whatsappLink } from "@/content/site";
+import { HanziWord } from "./Hanzi";
 import { Lantern } from "./Lantern";
 import { Pic } from "./Pic";
 import { InkButton } from "./InkButton";
 import { Petals } from "./Petals";
 
-// Ширина сцены на экране: она закрывает первый экран целиком (cover)
+// Ширина сцены на экране: она закрывает первый экран целиком (cover).
+// На телефоне сцена в 3-4 раза шире экрана и видна только её середина, поэтому там
+// браузеру называем размер поменьше - иначе он тянет самые тяжёлые файлы.
 const SCENE_W = "max(100vw, 178vh)";
+const WALL_SIZES = `(max-width: 767px) 190vw, ${SCENE_W}`;
+const TREE_SIZES = `(max-width: 767px) 85vw, calc(${SCENE_W} * 0.52)`;
 
 // Первый экран - сцена из слоёв (эксперимент hero-scene).
 // Разметка статичная (рендерится на сервере), всё движение подключает HeroFx:
@@ -18,7 +23,32 @@ export function Hero() {
       <div className="scene">
         <div className="scene__wall">
           <div data-mouse="6">
-            <Pic name="scene-wall" alt="" sizes={SCENE_W} eager />
+            <Pic name="scene-wall" alt="" sizes={WALL_SIZES} eager />
+          </div>
+        </div>
+
+        {/* Фамилия: светлая копия видна везде, кроме проёма, красная - только в проёме.
+            Маски привязаны к стене (6 px), сама надпись смещается на 9 px (6 + 3). */}
+        {(["light", "red"] as const).map((tone) => (
+          <div key={tone} className={`scene__name scene__name--${tone}`} data-mouse="6" aria-hidden>
+            <div data-mouse="3">
+              <div className="hero__name">
+                {[...site.name].map((ch, i) => (
+                  <span key={i} className="hero__letter-mask">
+                    <span className="hero__letter" data-letter={i}>
+                      {ch}
+                    </span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+
+        <div className="scene__roof">
+          <div data-mouse="6">
+            <span className="scene__roof-shadow" />
+            <Pic name="scene-roof" alt="" sizes={WALL_SIZES} />
           </div>
         </div>
 
@@ -37,16 +67,16 @@ export function Hero() {
         </div>
 
         <div className="scene__tree scene__tree--left">
-          <div data-mouse="24">
+          <div data-mouse="18">
             <div data-tree="0% 100%">
-              <Pic name="scene-trees-left" alt="" sizes={`calc(${SCENE_W} * 0.54)`} />
+              <Pic name="scene-trees-left" alt="" sizes={TREE_SIZES} />
             </div>
           </div>
         </div>
         <div className="scene__tree scene__tree--right">
-          <div data-mouse="28">
+          <div data-mouse="22">
             <div data-tree="100% 100%">
-              <Pic name="scene-trees-right" alt="" sizes={`calc(${SCENE_W} * 0.53)`} />
+              <Pic name="scene-trees-right" alt="" sizes={TREE_SIZES} />
             </div>
           </div>
         </div>
@@ -68,16 +98,13 @@ export function Hero() {
         <Petals />
       </div>
 
+      <div className="hero__side" aria-hidden data-fade>
+        <HanziWord word={hero.hanzi} className="flex flex-col gap-1" charClassName="h-7 w-7" />
+        <span className="hero__side-line" />
+        <span className="hero__side-caption">{hero.hanziCaption}</span>
+      </div>
+
       <div className="hero__content">
-        <p className="hero__surname" aria-label={site.name}>
-          {[...site.name].map((ch, i) => (
-            <span key={i} className="hero__letter-mask" aria-hidden>
-              <span className="hero__letter" data-letter>
-                {ch}
-              </span>
-            </span>
-          ))}
-        </p>
         <h1 className="hero__offer">
           {hero.offer.map((line, i) => (
             <span key={i} className="hero__line-mask">

@@ -1,16 +1,16 @@
 /* ── Эксперимент: первый экран как сцена из слоёв ─────────────────────────
    Образец - assets/reference/hero-scene-ref.png (1672×941).
    Сцена закрывает первый экран целиком (cover), слои стоят в процентах от неё.
-   Новых цветов и шрифтов нет; размер строки с фамилией взят из существующих. */
+   Надпись, оффер, подзаголовок, кнопки и градиент - как в основной версии
+   (правила в globals.css), здесь только сама сцена. */
 
 .hero--scene {
+  --hero-h: max(100svh, 700px);
   /* высота сцены = высота первого экрана, но не меньше, чем нужно, чтобы закрыть ширину */
-  --scene-h: max(100svh, 700px, 100vw * 941 / 1672);
+  --scene-h: max(var(--hero-h), 100vw * 941 / 1672);
   --scene-w: calc(var(--scene-h) * 1672 / 941);
   /* на сколько сцена выступает за левый и правый край экрана */
   --edge: calc((var(--scene-w) - 100vw) / 2);
-  /* на сколько сцена поднята (телефон: чтобы фигура была выше текста) */
-  --lift: 0px;
 }
 
 .scene {
@@ -20,13 +20,12 @@
   top: 50%;
   width: var(--scene-w);
   height: var(--scene-h);
-  margin: calc(var(--scene-h) / -2 - var(--lift)) 0 0 calc(var(--scene-w) / -2);
+  margin: calc(var(--scene-h) / -2) 0 0 calc(var(--scene-w) / -2);
   overflow: hidden;
   pointer-events: none;
 }
 .scene--front {
   z-index: 1;
-  margin-top: calc(var(--scene-h) / -2);
 }
 .scene picture,
 .scene img {
@@ -48,7 +47,63 @@
   inset: calc(100% * -20 / 941) calc(100% * -32 / 1672);
 }
 
-/* 2. Заур: центр на 50% ширины, голова на 35% высоты, подошва на 96% */
+/* 2. Фамилия - та же надпись, что в основной версии (размер, шрифт и место по вертикали
+      из .hero__name), но слоем сцены: между стеной и крышей.
+      Две копии: светлая обрезана по маске «всё, кроме проёма», красная - по маске проёма.
+      Проём в сцене: 550-1100 px по ширине, до 830 px по высоте; верх маски (270 px) спрятан за крышей. Маски лежат на обёртках,
+      которые смещаются вместе со стеной. */
+.scene__name,
+.scene__name > div {
+  position: absolute;
+  inset: 0;
+}
+.scene__name--light {
+  clip-path: polygon(
+    evenodd,
+    0 0,
+    100% 0,
+    100% 100%,
+    0 100%,
+    0 0,
+    32.9% 28.7%,
+    32.9% 88.2%,
+    65.79% 88.2%,
+    65.79% 28.7%,
+    32.9% 28.7%
+  );
+}
+.scene__name--red {
+  clip-path: inset(28.7% 34.21% 11.8% 32.9%);
+}
+.scene .hero__name {
+  z-index: auto;
+  left: var(--edge);
+  right: auto;
+  width: 100vw;
+  top: calc((var(--scene-h) - var(--hero-h)) / 2 + var(--header-h) + 0.5svh);
+}
+.scene__name--red .hero__name {
+  color: var(--color-lacquer);
+}
+
+/* 3. Крыша: вырезана из стены и стоит на том же месте, смещается вместе со стеной.
+      Под ней мягкая тень вниз - на буквы и стену. */
+.scene__roof {
+  position: absolute;
+  inset: 0;
+}
+.scene__roof-shadow {
+  position: absolute;
+  left: 30.3%;
+  right: 31.2%;
+  top: 29.5%;
+  height: 6.5%;
+  background: linear-gradient(180deg, rgba(17, 16, 16, 0.5) 0%, rgba(17, 16, 16, 0.22) 45%, rgba(17, 16, 16, 0) 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
+}
+
+/* 4. Заур: центр на 50% ширины, голова на 35% высоты, подошва на 96% */
 .scene__zaur {
   position: absolute;
   left: 50%;
@@ -72,38 +127,26 @@
   background: radial-gradient(closest-side, rgba(17, 16, 16, 0.5), rgba(17, 16, 16, 0.22) 55%, rgba(17, 16, 16, 0));
 }
 
-/* 3. Деревья: два независимых слоя. Левое прижато к левому и нижнему краю сцены,
-      правое - к правому и нижнему. За краем сцены у каждого достроенные поля
-      (96 px наружу, по 48 px сверху и снизу) - запас на смещение. */
+/* 5. Деревья: два независимых слоя, увеличены на 3% от своего угла привязки
+      (левое - от левого нижнего, правое - от правого нижнего) и сдвинуты за край сцены
+      на амплитуду смещения, чтобы при движении не открывался срез картинки. */
 .scene__tree {
   position: absolute;
-  top: calc(100% * -48 / 941);
-  bottom: calc(100% * -48 / 941);
 }
 .scene__tree--left {
-  left: calc(100% * -96 / 1672);
-  width: calc(100% * 943 / 1672);
+  left: -20px;
+  bottom: -10px;
+  width: calc(100% * 847 / 1672 * 1.03);
+  aspect-ratio: 847 / 941;
 }
 .scene__tree--right {
-  right: calc(100% * -96 / 1672);
-  width: calc(100% * 921 / 1672);
+  right: -24px;
+  bottom: -12px;
+  width: calc(100% * 825 / 1672 * 1.03);
+  aspect-ratio: 825 / 941;
 }
 
-/* Тёмно-красный градиент под оффером (телефон: полоса снизу, как в основной версии) */
-.hero--scene .hero__shade {
-  height: 60%;
-}
-/* Лёгкое затемнение под шапкой, чтобы меню читалось на фоне цветов */
-.hero__topshade {
-  position: absolute;
-  z-index: -1;
-  inset: 0 0 auto 0;
-  height: calc(var(--header-h) * 2);
-  background: linear-gradient(180deg, rgba(125, 9, 28, 0.6) 0%, rgba(125, 9, 28, 0) 100%);
-  pointer-events: none;
-}
-
-/* 4. Фонари на золотых нитях. Нить начинается выше края сцены - запас на смещение. */
+/* 6. Фонари на золотых нитях. Нить начинается выше края сцены - запас на смещение. */
 .scene__lanterns {
   position: absolute;
   inset: 0;
@@ -150,7 +193,7 @@
   filter: none;
 }
 
-/* 5. Лепестки: холст больше экрана на двойную амплитуду смещения */
+/* 7. Лепестки: холст больше экрана на двойную амплитуду смещения */
 .hero__petals-layer {
   position: absolute;
   z-index: 2;
@@ -159,64 +202,29 @@
   will-change: transform;
 }
 
-/* Текст: фамилия строкой над оффером, всё слева внизу */
-.hero__surname {
-  display: flex;
-  font-family: var(--font-display);
-  font-weight: 900;
-  font-size: clamp(30px, 2.8vw, 46px);
-  line-height: 0.94;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  white-space: nowrap;
+/* Лёгкое затемнение под шапкой: без него пункты меню теряются на цветах */
+.hero__topshade {
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 auto 0;
+  height: calc(var(--header-h) * 1.6);
+  background: linear-gradient(180deg, rgba(125, 9, 28, 0.6) 0%, rgba(125, 9, 28, 0) 100%);
+  pointer-events: none;
 }
-.hero--scene .hero__content {
-  gap: 14px;
+/* Подзаголовок и подпись справа стоят на камнях - мягкая тень вместо плашки */
+.hero--scene .hero__sub,
+.hero--scene .hero__side-caption {
+  text-shadow:
+    0 1px 2px rgba(17, 16, 16, 0.55),
+    0 0 14px rgba(17, 16, 16, 0.6);
 }
 
 @media (min-width: 768px) {
   .hero--scene {
-    --scene-h: max(100svh, 620px, 100vw * 941 / 1672);
+    --hero-h: max(100svh, 620px);
   }
-  /* --text-w: место слева от фигуры (её полуширина - 10.6% высоты сцены) */
-  .hero--scene {
-    --text-w: calc(50vw - 10.6svh - var(--gutter) - 16px);
-  }
-  /* градиент слева внизу: плотный под текстом, гаснет перед фигурой */
-  .hero--scene .hero__shade {
-    inset: 0;
-    height: auto;
-    background: linear-gradient(
-      90deg,
-      rgba(125, 9, 28, 0.95) 0%,
-      rgba(125, 9, 28, 0.9) calc(var(--gutter) + var(--text-w) - 6vw),
-      rgba(125, 9, 28, 0) calc(var(--gutter) + var(--text-w) + 2.4vw)
-    );
-    -webkit-mask-image: linear-gradient(180deg, transparent 16%, #000 42%);
-    mask-image: linear-gradient(180deg, transparent 16%, #000 42%);
-  }
-  .hero--scene .hero__content {
-    grid-template-columns: minmax(0, 1fr);
-    justify-items: start;
-    gap: 20px;
-  }
-  .hero__surname {
-    margin-bottom: -6px;
-  }
-  .hero--scene .hero__right {
-    justify-self: start;
-    max-width: var(--text-w);
-  }
-  .hero--scene .hero__sub {
-    max-width: min(30rem, 34vw, var(--text-w));
-  }
-  /* на низких экранах текст сжимается, чтобы не доставать до фонаря с иконкой,
-     на узких - чтобы первая строка (7.1em) не доходила до фигуры */
-  .hero--scene .hero__offer {
-    font-size: min(clamp(48px, 5.4vw, 104px), 8.6svh, var(--text-w) / 7.15);
-  }
-  .hero--scene .hero__surname {
-    font-size: min(clamp(30px, 2.8vw, 46px), 4.2svh);
+  .scene .hero__name {
+    top: calc((var(--scene-h) - var(--hero-h)) / 2 + var(--header-h) + 1svh);
   }
 }
 
@@ -228,10 +236,10 @@
     --tree-out-r: 0.4;
   }
   .scene__tree--left {
-    left: calc(var(--edge) - var(--scene-w) * 943 / 1672 * var(--tree-out-l));
+    left: calc(var(--edge) - var(--scene-w) * 847 / 1672 * 1.03 * var(--tree-out-l));
   }
   .scene__tree--right {
-    right: calc(var(--edge) - var(--scene-w) * 921 / 1672 * var(--tree-out-r));
+    right: calc(var(--edge) - var(--scene-w) * 825 / 1672 * 1.03 * var(--tree-out-r));
   }
   .hero--scene .lantern {
     width: clamp(64px, 5.6vw, 96px);
@@ -248,10 +256,8 @@
   }
 }
 
-/* Телефон: сцена приподнята, чтобы над текстом было видно больше фигуры */
 @media (max-width: 767px) {
   .hero--scene {
-    --lift: 9svh;
     --tree-out-l: 0.68;
     --tree-out-r: 0.5;
   }

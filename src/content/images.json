@@ -43,13 +43,17 @@
     "width": 522,
     "height": 1467
   },
+  "scene-roof": {
+    "width": 1672,
+    "height": 941
+  },
   "scene-trees-left": {
-    "width": 943,
-    "height": 1037
+    "width": 847,
+    "height": 941
   },
   "scene-trees-right": {
-    "width": 921,
-    "height": 1037
+    "width": 825,
+    "height": 941
   },
   "scene-wall": {
     "width": 1736,
