@@ -12,7 +12,7 @@ const SCENE_W = "max(100vw, 178vh)";
 const WALL_SIZES = `(max-width: 767px) 190vw, ${SCENE_W}`;
 const TREE_SIZES = `(max-width: 767px) 85vw, calc(${SCENE_W} * 0.52)`;
 
-// Первый экран - сцена из слоёв (эксперимент hero-scene).
+// Первый экран - сцена из слоёв (эксперимент hero-scene-no-name: вариант без надписи «ГАСАНОВ»).
 // Разметка статичная (рендерится на сервере), всё движение подключает HeroFx:
 // data-mouse - амплитуда смещения слоя в px, data-tree / data-photo / data-lantern - появление.
 export function Hero() {
@@ -24,19 +24,6 @@ export function Hero() {
         <div className="scene__wall">
           <div data-mouse="6">
             <Pic name="scene-wall" alt="" sizes={WALL_SIZES} eager />
-          </div>
-        </div>
-
-        {/* Фамилия: перед крышей (она часть стены), за фигурой и деревьями */}
-        <div className="scene__name" data-mouse="9" aria-hidden>
-          <div className="hero__name">
-            {[...site.name].map((ch, i) => (
-              <span key={i} className="hero__letter-mask">
-                <span className="hero__letter" data-letter={i}>
-                  {ch}
-                </span>
-              </span>
-            ))}
           </div>
         </div>
 

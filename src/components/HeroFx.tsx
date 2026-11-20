@@ -19,13 +19,7 @@ export function HeroFx() {
     const ctx = gsap.context(() => {
       // ── Появление ──
       const tl = gsap.timeline({ paused: true, defaults: { ease: "power4.out" } });
-      // надпись стоит двумя копиями (светлая и красная) - буквы с одним номером едут вместе
       tl.from(
-        "[data-letter]",
-        { yPercent: 112, duration: 1.15, stagger: (_i: number, el: HTMLElement) => Number(el.dataset.letter) * 0.07 },
-        0,
-      )
-        .from(
           "[data-tree]",
           {
             autoAlpha: 0,
