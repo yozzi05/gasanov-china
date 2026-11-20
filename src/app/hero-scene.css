@@ -83,13 +83,14 @@
 .scene__tree--left {
   left: -20px;
   bottom: -10px;
-  width: calc(100% * 847 / 1672 * 1.03);
+  /* на низких окнах 3% меньше запаса на смещение, поэтому не меньше +18 px */
+  width: max(100% * 847 / 1672 * 1.03, 100% * 847 / 1672 + 18px);
   aspect-ratio: 847 / 941;
 }
 .scene__tree--right {
   right: -24px;
   bottom: -12px;
-  width: calc(100% * 825 / 1672 * 1.03);
+  width: max(100% * 825 / 1672 * 1.03, 100% * 825 / 1672 + 21px);
   aspect-ratio: 825 / 941;
 }
 
@@ -170,10 +171,28 @@
   .hero--scene {
     --hero-h: max(100svh, 620px);
   }
-  /* Подзаголовок и кнопки сдвинуты влево с камней: правый край блока стоит
-     на 87% ширины сцены - у левого края большого камня */
+  /* Весь текст слева одним столбцом: оффер, под ним подзаголовок и две кнопки в ряд */
+  .hero--scene .hero__content {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: start;
+    gap: 22px;
+  }
+  /* --text-w: место слева от фигуры (её полуширина - 10.6% высоты сцены).
+     Кнопки стоят в ряд, пока помещаются в это место; на узких экранах - одна под другой */
   .hero--scene .hero__right {
-    margin-right: max(0px, var(--scene-w) * 0.13 - var(--edge) - var(--gutter));
+    --text-w: calc(50vw - 10.6svh - var(--gutter) - 16px);
+    justify-self: start;
+    max-width: var(--text-w);
+  }
+  .hero--scene .hero__sub {
+    max-width: min(30rem, 34vw, var(--text-w));
+  }
+  /* на низких окнах оффер чуть сжимается, чтобы не доставать до фонаря с иконкой.
+     Первая строка теперь выше градиента и заходит на цветы и светлый проём - мягкая тень */
+  .hero--scene .hero__offer {
+    font-size: min(clamp(48px, 5.4vw, 104px), 10svh);
+    /* filter, а не text-shadow: строки лежат в масках появления, и тень текста они обрезают */
+    filter: drop-shadow(0 1px 2px rgba(17, 16, 16, 0.3)) drop-shadow(0 0 16px rgba(17, 16, 16, 0.4));
   }
 }
 
