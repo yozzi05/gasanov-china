@@ -1,6 +1,6 @@
 # Публикует на GitHub Pages:
 #   - сам сайт из основной ветки          -> https://<аккаунт>.github.io/<репозиторий>/
-#   - предпросмотр каждой ветки fix/<имя> -> .../<репозиторий>/preview/<имя>/
+#   - предпросмотр каждой ветки fix/<имя> и experiment/<имя> -> .../<репозиторий>/preview/<имя>/
 # Запускается при обновлении основной ветки или любой ветки fix/..., при удалении
 # ветки fix/... (её предпросмотр исчезает) и раз в день - ради свежего курса юаня.
 # Всё опубликованное здесь закрыто от поисковиков (демо-копия).
@@ -8,7 +8,7 @@ name: GitHub Pages
 
 on:
   push:
-    branches: [master, "fix/**"]
+    branches: [master, "fix/**", "experiment/**"]
   delete:
   schedule:
     - cron: "17 13 * * *"
@@ -25,8 +25,8 @@ concurrency:
 
 jobs:
   build:
-    # при удалении реагируем только на ветки fix/...
-    if: github.event_name != 'delete' || (github.event.ref_type == 'branch' && startsWith(github.event.ref, 'fix/'))
+    # при удалении реагируем только на ветки fix/... и experiment/...
+    if: github.event_name != 'delete' || (github.event.ref_type == 'branch' && (startsWith(github.event.ref, 'fix/') || startsWith(github.event.ref, 'experiment/')))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

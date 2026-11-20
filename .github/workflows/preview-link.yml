@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   comment:
-    if: startsWith(github.head_ref, 'fix/')
+    if: startsWith(github.head_ref, 'fix/') || startsWith(github.head_ref, 'experiment/')
     runs-on: ubuntu-latest
     steps:
       - name: Написать ссылку в pull request
@@ -21,7 +21,7 @@ jobs:
           REPO: ${{ github.repository }}
           OWNER: ${{ github.repository_owner }}
         run: |
-          slug="$(echo "${HEAD_REF#fix/}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g')"
+          slug="$(echo "${HEAD_REF#*/}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g')"
           url="https://${OWNER}.github.io/${REPO#*/}/preview/${slug}/"
           gh pr comment "$PR_NUMBER" --repo "$REPO" --body "Предпросмотр этой ветки: ${url}
 

@@ -120,7 +120,7 @@ gh pr merge --squash --delete-branch
 Всё живёт на GitHub Pages, сторонних сервисов нет. Этим управляет `.github/workflows/pages.yml`:
 
 - основная ветка `master` публикуется по адресу https://yozzi05.github.io/gasanov-china/;
-- каждая ветка `fix/<название>` - по адресу `.../gasanov-china/preview/<название>/`;
+- каждая ветка `fix/<название>` и `experiment/<название>` - по адресу `.../gasanov-china/preview/<название>/`;
 - при удалении ветки её предпросмотр исчезает;
 - раз в день сайт пересобирается ради свежего курса юаня.
 

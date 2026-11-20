@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Собирает всё, что публикуется на GitHub Pages, в папку site/:
 #   site/                     - основная ветка (сам сайт)
-#   site/preview/<название>/  - предпросмотр каждой ветки fix/<название>
+#   site/preview/<название>/  - предпросмотр каждой ветки fix/<название> и experiment/<название>
 # Запускается из .github/workflows/pages.yml. Удалённая ветка просто перестаёт
 # попадать в сборку, поэтому её предпросмотр исчезает при следующей публикации.
 set -uo pipefail
@@ -39,8 +39,8 @@ echo "### Опубликовано" >> "$SUMMARY"
 echo "- Сайт: https://${GITHUB_REPOSITORY_OWNER}.github.io/${REPO_NAME}/" >> "$SUMMARY"
 
 # Предпросмотры: ошибка в одной ветке не должна ронять публикацию сайта
-git for-each-ref --format='%(refname:strip=3)' "refs/remotes/origin/fix/" | while read -r branch; do
-  slug="$(echo "${branch#fix/}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g')"
+git for-each-ref --format='%(refname:strip=3)' "refs/remotes/origin/fix/" "refs/remotes/origin/experiment/" | while read -r branch; do
+  slug="$(echo "${branch#*/}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g')"
   [ -n "$slug" ] || continue
   echo "::group::Предпросмотр $branch"
   if build "$branch" "/$REPO_NAME/preview/$slug" "$SITE/preview/$slug"; then
