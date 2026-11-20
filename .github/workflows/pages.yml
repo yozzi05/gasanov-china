@@ -1,11 +1,15 @@
-# Публикует сайт на GitHub Pages при каждом обновлении ветки master.
-# Это демо-копия: она закрыта от индексации и собирается с путём /<имя-репозитория>.
+# Публикует на GitHub Pages:
+#   - сам сайт из основной ветки          -> https://<аккаунт>.github.io/<репозиторий>/
+#   - предпросмотр каждой ветки fix/<имя> и experiment/<имя> -> .../<репозиторий>/preview/<имя>/
+# Запускается при обновлении основной ветки или любой ветки fix/..., при удалении
+# ветки fix/... (её предпросмотр исчезает) и раз в день - ради свежего курса юаня.
+# Всё опубликованное здесь закрыто от поисковиков (демо-копия).
 name: GitHub Pages
 
 on:
   push:
-    branches: [master]
-  # раз в день пересобираем, чтобы в страницу попадал свежий курс юаня
+    branches: [master, "fix/**", "experiment/**"]
+  delete:
   schedule:
     - cron: "17 13 * * *"
   workflow_dispatch:
@@ -17,26 +21,28 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
+    # при удалении реагируем только на ветки fix/... и experiment/...
+    if: github.event_name != 'delete' || (github.event.ref_type == 'branch' && (startsWith(github.event.ref, 'fix/') || startsWith(github.event.ref, 'experiment/')))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - run: npm run build
+      - name: Собрать сайт и предпросмотры веток
         env:
-          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
-          NEXT_PUBLIC_NOINDEX: "1"
-      - run: touch out/.nojekyll
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: bash scripts/build-pages.sh
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: out
+          path: site
 
   deploy:
     needs: build
