@@ -15,6 +15,79 @@
 | `npm run rate` | Запросить курс юаня ЦБ и сохранить в `src/content/rate.json` (запускается сам перед каждой сборкой) |
 | `npm run og` | Пересобрать обложку для соцсетей (`public/og.jpg`) и иконку |
 
+## Как вносить правки
+
+Дизайн заморожен на теге `v1.0`. Правила - в [CLAUDE.md](CLAUDE.md), описание дизайн-системы - в [DESIGN.md](DESIGN.md).
+В основную ветку `master` напрямую не коммитим: каждая правка идёт в своей ветке и попадает в `master` через pull request.
+
+### 1. Создать ветку под правку
+
+```bash
+git checkout master
+git pull
+git checkout -b fix/nazvanie-pravki
+```
+
+### 2. Посмотреть локально
+
+```bash
+npm run build
+npm run serve
+```
+
+Сайт откроется на http://localhost:3219. Проверьте изменённое место на ширине 390 и 1440 px
+(в браузере: F12 → значок телефона → задать ширину).
+
+### 3. Опубликовать
+
+Сначала - на предпросмотр:
+
+```bash
+git add -A
+git commit -m "Коротко, что изменено"
+git push -u origin fix/nazvanie-pravki
+gh pr create --fill
+```
+
+Vercel сам соберёт ветку и оставит в pull request ссылку на предпросмотр. Если всё хорошо - публикуем:
+
+```bash
+gh pr merge --squash --delete-branch
+```
+
+После слияния Vercel обновит основной сайт, а GitHub Pages - демо-копию. Обычно это занимает 1-2 минуты.
+
+### 4. Откатить
+
+Отменить одну опубликованную правку (найдите её номер в `git log --oneline`):
+
+```bash
+git checkout master
+git pull
+git checkout -b fix/otkat
+git revert <номер-коммита>
+git push -u origin fix/otkat
+gh pr create --fill
+gh pr merge --squash --delete-branch
+```
+
+Вернуть сайт целиком к утверждённой версии `v1.0` (код, стили, картинки и контент; правила и документация остаются):
+
+```bash
+git checkout master
+git pull
+git checkout -b fix/vernut-v1
+git restore --source v1.0 --staged --worktree -- src public assets scripts next.config.ts package.json package-lock.json
+git commit -m "Вернуть сайт к версии v1.0"
+git push -u origin fix/vernut-v1
+gh pr create --fill
+gh pr merge --squash --delete-branch
+```
+
+Срочный откат без git: в Vercel откройте проект → **Deployments** → у последней рабочей версии
+нажмите **⋯** → **Instant Rollback**. Сайт вернётся за несколько секунд; код при этом не меняется,
+поэтому потом всё равно сделайте откат в git одним из способов выше.
+
 ## Где что править
 
 - **Тексты, контакты, тарифы, ссылки** — `src/content/site.ts`. Места с пометкой «УТОЧНИТЬ» нужно подтвердить.
@@ -36,6 +109,19 @@
 В страницу вшит курс на момент сборки, а браузер посетителя пробует подтянуть свежий. Чтобы вшитый курс не устаревал,
 сайт нужно пересобирать раз в день: на GitHub Pages это делает расписание в `.github/workflows/pages.yml`,
 на другом хостинге понадобится такая же ежедневная сборка.
+
+## Vercel
+
+Проект готов к Vercel без дополнительных файлов настроек:
+
+- Vercel сам определяет Next.js и запускает `npm run build`.
+- Переменную `NEXT_PUBLIC_BASE_PATH` в Vercel задавать **не нужно**: она нужна только GitHub Pages,
+  где сайт лежит в подпапке `/gasanov-china`. На Vercel сайт открывается с корня адреса.
+- Предпросмотры веток автоматически закрыты от поисковиков.
+- Пока к проекту не подключён боевой домен, добавьте в Vercel переменную `NEXT_PUBLIC_NOINDEX` = `1`
+  для окружения Production, чтобы адрес `*.vercel.app` не попал в поиск. После подключения домена её нужно удалить.
+- Курс юаня вшивается при сборке. Чтобы он не устаревал, сайт на Vercel нужно пересобирать раз в день
+  (Deploy Hook + расписание) - это настраивается отдельно, когда сайт переедет на боевой домен.
 
 ## Размещение
 

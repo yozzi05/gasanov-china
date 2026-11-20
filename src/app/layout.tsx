@@ -26,8 +26,12 @@ export const metadata: Metadata = {
   title: site.title,
   description: site.description,
   alternates: { canonical: "/" },
-  // демо-копию (например, на GitHub Pages) от индексации закрываем
-  robots: process.env.NEXT_PUBLIC_NOINDEX ? { index: false, follow: false } : { index: true, follow: true },
+  // Демо-копии от индексации закрываем: GitHub Pages - через NEXT_PUBLIC_NOINDEX,
+  // предпросмотры Vercel - автоматически (VERCEL_ENV выставляет сам Vercel).
+  robots:
+    process.env.NEXT_PUBLIC_NOINDEX || process.env.VERCEL_ENV === "preview"
+      ? { index: false, follow: false }
+      : { index: true, follow: true },
   openGraph: {
     type: "website",
     locale: "ru_RU",
