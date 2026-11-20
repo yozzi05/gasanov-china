@@ -13,6 +13,17 @@ const OPTIONS = {
   "zaur-cutout": { trim: true, max: 1080 },
   "zaur-portrait": { max: 828 },
   "zaur-about": { max: 1440 },
+  // Сцена первого экрана (1672×941). Деревья не обрезаем: левое прижато к левому
+  // и нижнему краю сцены, правое - к правому и нижнему.
+  // extend: поля, достроенные зеркальным отражением края. Они лежат за краем сцены и нужны
+  // только как запас, когда слой смещается за курсором; масштаб и положение слоя не меняются.
+  // Те же числа стоят в src/app/hero-scene.css.
+  "scene-wall": { extend: { left: 32, right: 32, top: 20, bottom: 20 } },
+  "scene-trees-left": { extend: { left: 96, top: 48, bottom: 48 } },
+  "scene-trees-right": { extend: { right: 96, top: 48, bottom: 48 } },
+  "scene-lantern": { trim: true, max: 200 },
+  "scene-lantern-2": { trim: true, max: 200 },
+  "zaur-walk": { trim: true, max: 640 },
   // у скриншота отзыва обрезаем жёлтую рамку старого сайта
   "review-1": { extract: { left: 58, top: 228, width: 584, height: 778 } },
 };
@@ -26,6 +37,7 @@ for (const file of fs.readdirSync(SRC).sort()) {
   let img = sharp(path.join(SRC, file));
   if (opt.trim) img = sharp(await img.trim().toBuffer());
   if (opt.extract) img = sharp(await img.extract(opt.extract).toBuffer());
+  if (opt.extend) img = sharp(await img.extend({ ...opt.extend, extendWith: "mirror" }).png().toBuffer());
   const meta = await img.metadata();
   manifest[name] = { width: meta.width, height: meta.height };
   const maxW = Math.min(opt.max ?? 1920, meta.width);

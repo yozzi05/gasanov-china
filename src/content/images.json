@@ -35,6 +35,26 @@
     "width": 584,
     "height": 778
   },
+  "scene-lantern-2": {
+    "width": 518,
+    "height": 1464
+  },
+  "scene-lantern": {
+    "width": 522,
+    "height": 1467
+  },
+  "scene-trees-left": {
+    "width": 943,
+    "height": 1037
+  },
+  "scene-trees-right": {
+    "width": 921,
+    "height": 1037
+  },
+  "scene-wall": {
+    "width": 1736,
+    "height": 981
+  },
   "zaur-about": {
     "width": 1680,
     "height": 2520
@@ -46,6 +66,10 @@
   "zaur-portrait": {
     "width": 1246,
     "height": 1297
+  },
+  "zaur-walk": {
+    "width": 591,
+    "height": 1706
   },
   "zaur-wall": {
     "width": 2410,
