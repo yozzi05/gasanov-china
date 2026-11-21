@@ -4,16 +4,16 @@ import { useId, useState } from "react";
 import { site, whatsappLink } from "@/content/site";
 import { CATEGORIES, RATE_SPREAD, type CategoryId } from "@/content/tariff-grids";
 import {
-  boxesVolume,
   buildRequestText,
   calcTariff,
   fmtInt,
-  fmtNum,
   fmtRate,
   getCategory,
   parseNum,
+  type Places,
 } from "@/lib/calcTariff";
 import { InkButton } from "./InkButton";
+import { VolumeHelper, VOLUME_HELPER_EMPTY, type VolumeHelperState } from "./VolumeHelper";
 import { WhatsAppIcon } from "./icons";
 
 const { tariffs, calc } = site;
@@ -22,22 +22,21 @@ const { tariffs, calc } = site;
 const SCALE_MAX = 400;
 const pct = (d: number) => `${(Math.min(Math.max(d, 0), SCALE_MAX) / SCALE_MAX) * 100}%`;
 
-type Mode = "volume" | "boxes";
-
-// Калькулятор: вес и объём (или коробки), категория → плотность, тариф по сетке, цена и срок.
+// Калькулятор: вес и объём (объём можно посчитать помощником по местам), категория →
+// плотность, тариф по сетке, цена и срок.
 // Сетки - src/content/tariff-grids.ts, расчёт - src/lib/calcTariff.ts.
 export function Calculator() {
   const id = useId();
-  const [mode, setMode] = useState<Mode>("volume");
   const [weight, setWeight] = useState("100");
   const [volume, setVolume] = useState("0,5");
-  const [box, setBox] = useState({ count: "4", l: "60", w: "40", h: "50" });
   const [catId, setCatId] = useState<CategoryId>(CATEGORIES[0].id);
+  // значения помощника; places не null, пока объём в поле посчитан помощником
+  const [helper, setHelper] = useState<VolumeHelperState>(VOLUME_HELPER_EMPTY);
+  const [places, setPlaces] = useState<Places | null>(null);
 
   const cat = getCategory(catId);
   const w = parseNum(weight);
-  const boxes = { count: parseNum(box.count), l: parseNum(box.l), w: parseNum(box.w), h: parseNum(box.h) };
-  const v = mode === "volume" ? parseNum(volume) : boxesVolume(boxes.count, boxes.l, boxes.w, boxes.h);
+  const v = parseNum(volume);
   const result = calcTariff({ category: catId, weight: w, volume: v });
   const density = result.status === "empty" ? null : result.density;
   const days = `${cat.days[0]}-${cat.days[1]} дней`;
@@ -45,76 +44,47 @@ export function Calculator() {
   const message =
     result.status === "empty"
       ? site.messages.default
-      : buildRequestText({
-          categoryLabel: cat.label,
-          weight: w,
-          volume: v,
-          boxes: mode === "boxes" ? boxes : null,
-          result,
-        });
+      : buildRequestText({ categoryLabel: cat.label, weight: w, volume: v, places, result });
 
   const notes: string[] = [];
   if (result.status === "empty" || result.status === "below-min") notes.push(result.message);
   if (result.status === "individual") notes.push(result.reason);
 
-  const field = (key: string, label: string, value: string, onChange: (s: string) => void) => (
-    <div className="calc__field" key={key}>
-      <label htmlFor={`${id}-${key}`}>{label}</label>
-      <input
-        id={`${id}-${key}`}
-        inputMode="decimal"
-        autoComplete="off"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
-    </div>
-  );
-  const boxField = (k: keyof typeof box, label: string) =>
-    field(`box-${k}`, label, box[k], (s) => setBox((b) => ({ ...b, [k]: s })));
-
   return (
     <div className="calc">
       <form className="calc__form" onSubmit={(e) => e.preventDefault()} noValidate>
-        <div className="calc__modes" role="group" aria-label="Как указать объём">
-          {(
-            [
-              ["volume", "Знаю объём"],
-              ["boxes", "Посчитать по коробкам"],
-            ] as const
-          ).map(([m, label]) => (
-            <button
-              key={m}
-              type="button"
-              className="calc__mode"
-              aria-pressed={mode === m}
-              onClick={() => setMode(m)}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="calc__field">
+          <label htmlFor={`${id}-kg`}>Вес, кг</label>
+          <input
+            id={`${id}-kg`}
+            inputMode="decimal"
+            autoComplete="off"
+            value={weight}
+            onChange={(e) => setWeight(e.target.value)}
+          />
         </div>
 
-        {field("kg", "Вес, кг", weight, setWeight)}
-        {mode === "volume" ? (
-          field("m3", "Объём, м³", volume, setVolume)
-        ) : (
-          <>
-            {boxField("count", "Коробок, шт")}
-            <div className="calc__dims">
-              {boxField("l", "Длина, см")}
-              {boxField("w", "Ширина, см")}
-              {boxField("h", "Высота, см")}
-            </div>
-          </>
-        )}
+        <VolumeHelper
+          inputId={`${id}-m3`}
+          volume={volume}
+          state={helper}
+          onManualVolume={(s) => {
+            // объём исправили руками - помощник забывает свои значения
+            setVolume(s);
+            setHelper(VOLUME_HELPER_EMPTY);
+            setPlaces(null);
+          }}
+          onHelperChange={(next, vol, p) => {
+            setHelper(next);
+            setVolume(vol);
+            setPlaces(p);
+          }}
+        />
 
         <div className="calc__scale">
           <p className="calc__scale-head">
             <span>Плотность</span>
-            <span className="calc__scale-value">
-              {density === null ? "-" : `${fmtInt(density)} кг/м³`}
-              {mode === "boxes" && v > 0 && <i> · {fmtNum(v, 3)} м³</i>}
-            </span>
+            <span className="calc__scale-value">{density === null ? "-" : `${fmtInt(density)} кг/м³`}</span>
           </p>
           <div className="calc__scale-bar" aria-hidden>
             <span

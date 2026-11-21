@@ -672,37 +672,188 @@ html[data-motion="on"] .waybill[data-in] .waybill__stamp {
   line-height: 1.45;
 }
 
-/* Переключатель «Знаю объём / Посчитать по коробкам» */
-.calc__modes {
-  grid-column: 1 / -1;
+/* Поле «Объём» с кнопкой помощника справа; поля помощника - с выбором единиц */
+.calc {
+  position: relative;
+}
+.calc__input-wrap {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px 22px;
-  border-bottom: 1px solid rgba(244, 239, 230, 0.2);
 }
-.calc__mode {
-  margin-bottom: -1px;
-  padding: 0 0 10px;
-  border-bottom: 2px solid transparent;
-  font-size: 15px;
-  font-weight: 500;
-  color: rgba(244, 239, 230, 0.6);
-  cursor: pointer;
-  transition: color 0.3s, border-color 0.3s;
+.calc__input-wrap input {
+  flex: 1;
+  min-width: 0;
 }
-.calc__mode[aria-pressed="true"] {
-  border-bottom-color: var(--color-gold);
+.calc__input-wrap--icon input {
+  padding-right: 60px;
+}
+.calc__icon-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 2px;
+  width: 54px;
+  display: grid;
+  place-items: center;
   color: var(--color-paper);
+  cursor: pointer;
+  transition: color 0.3s;
 }
-.calc__mode:focus-visible {
+/* тонкий разделитель слева от иконки */
+.calc__icon-btn::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 16px;
+  bottom: 16px;
+  width: 1px;
+  background: rgba(244, 239, 230, 0.3);
+}
+.calc__icon-btn svg {
+  width: 24px;
+  height: 24px;
+}
+.calc__icon-btn[aria-expanded="true"] {
+  color: var(--color-gold);
+}
+.calc__icon-btn:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: -2px;
+}
+.calc__unit {
+  flex: none;
+  width: 52px;
+  height: 60px;
+  padding: 0 6px;
+  border: 0;
+  border-left: 1px solid rgba(244, 239, 230, 0.2);
+  border-bottom: 2px solid var(--color-paper);
+  border-radius: 0;
+  background: rgba(244, 239, 230, 0.08);
+  color: var(--color-paper);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  appearance: none;
+  cursor: pointer;
+}
+.calc__unit option {
+  color: var(--color-ink);
+}
+.calc__unit:focus-visible {
   outline: 2px solid var(--color-gold);
   outline-offset: 2px;
 }
-.calc__dims {
-  grid-column: 1 / -1;
+@media (hover: hover) {
+  .calc__icon-btn:hover {
+    color: var(--color-gold);
+  }
+}
+
+/* Помощник расчёта объёма: десктоп - панель под полем на ширину калькулятора,
+   телефон - нижняя шторка */
+.vhelp {
+  position: absolute;
+  z-index: 40;
+  top: var(--top);
+  left: var(--left);
+  width: var(--width);
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  padding: 22px 18px;
+  border-top: 1px solid var(--color-gold);
+  background: var(--color-ink);
+  color: var(--color-paper);
+  box-shadow: 0 24px 48px rgba(17, 16, 16, 0.45);
+  animation: vhelp-in 0.35s var(--ease-ink);
+}
+.vhelp__backdrop,
+.vhelp__grip {
+  display: none;
+}
+.vhelp__title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 28px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.vhelp__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 14px;
+}
+.vhelp__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(244, 239, 230, 0.2);
+}
+.vhelp__total {
+  font-size: 15px;
+}
+.vhelp__total b {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 30px;
+}
+@keyframes vhelp-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes vhelp-sheet {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes vhelp-fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (max-width: 767px) {
+  .vhelp {
+    position: fixed;
+    z-index: 80;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: 90svh;
+    overflow-y: auto;
+    padding: 10px 20px calc(22px + env(safe-area-inset-bottom));
+    transform: translateY(var(--drag, 0px));
+    animation: vhelp-sheet 0.4s var(--ease-ink);
+  }
+  .vhelp__head {
+    touch-action: none;
+  }
+  .vhelp__grip {
+    display: block;
+    width: 44px;
+    height: 4px;
+    margin: 4px auto 14px;
+    border-radius: 999px;
+    background: rgba(244, 239, 230, 0.35);
+  }
+  .vhelp__backdrop {
+    display: block;
+    position: fixed;
+    z-index: 79;
+    inset: 0;
+    background: rgba(17, 16, 16, 0.55);
+    animation: vhelp-fade 0.3s;
+  }
+}
+@media (min-width: 768px) {
+  .vhelp {
+    padding: 30px 32px;
+  }
 }
 
 /* Шкала плотности: золотая зона - допустимая плотность категории, белая метка - груз */
@@ -728,9 +879,6 @@ html[data-motion="on"] .waybill[data-in] .waybill__stamp {
   letter-spacing: 0;
   text-transform: none;
   color: var(--color-paper);
-}
-.calc__scale-value i {
-  font-style: normal;
 }
 .calc__scale-bar {
   position: relative;

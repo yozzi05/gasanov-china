@@ -48,9 +48,69 @@ export function parseNum(s: string): number {
   return Number.isFinite(n) && n > 0 ? n : 0;
 }
 
-/** Объём по коробкам: количество × длина × ширина × высота (см) → м³ */
-export function boxesVolume(count: number, l: number, w: number, h: number): number {
-  return count > 0 && l > 0 && w > 0 && h > 0 ? (count * l * w * h) / 1_000_000 : 0;
+// ── Форматирование ──────────────────────────────────────────────────────────
+
+const ru = (n: number, digits: number) =>
+  n.toLocaleString("ru-RU", { maximumFractionDigits: digits, minimumFractionDigits: 0 });
+
+/** 3.2 → «3,20» */
+export const fmtRate = (n: number) => n.toFixed(2).replace(".", ",");
+/** Целое с разрядами: 1250 → «1 250» */
+export const fmtInt = (n: number) => ru(Math.round(n), 0);
+export const fmtNum = ru;
+
+// ── Помощник расчёта объёма ─────────────────────────────────────────────────
+
+export type Unit = "см" | "м" | "мм";
+export const UNITS: readonly Unit[] = ["см", "м", "мм"];
+const TO_M: Record<Unit, number> = { см: 0.01, м: 1, мм: 0.001 };
+
+export type Shape = "box" | "cylinder";
+/** Размер со своими единицами */
+export type Dim = { value: number; unit: Unit };
+export type Places =
+  | { shape: "box"; count: number; l: Dim; w: Dim; h: Dim }
+  | { shape: "cylinder"; count: number; d: Dim; h: Dim };
+
+const m = (d: Dim) => d.value * TO_M[d.unit];
+
+/**
+ * Объём мест, м³, округлён до 3 знаков. 0 - если что-то не заполнено.
+ * Коробка: Д × Ш × В × кол-во; цилиндр: π × (D/2)² × В × кол-во.
+ */
+export function placesVolume(p: Places): number {
+  const dims = p.shape === "box" ? [p.l, p.w, p.h] : [p.d, p.h];
+  if (!(p.count > 0) || dims.some((d) => !(d.value > 0))) return 0;
+  const one = p.shape === "box" ? m(p.l) * m(p.w) * m(p.h) : Math.PI * (m(p.d) / 2) ** 2 * m(p.h);
+  return Math.round(one * p.count * 1000) / 1000;
+}
+
+/** Объём для поля ввода: 0.48 → «0,480» */
+export const fmtVolume = (v: number) => v.toFixed(3).replace(".", ",");
+
+/** 1 коробка, 2 коробки, 5 коробок */
+export function plural(n: number, one: string, few: string, many: string): string {
+  const a = Math.abs(n) % 100;
+  const b = a % 10;
+  if (a > 10 && a < 20) return many;
+  if (b === 1) return one;
+  if (b >= 2 && b <= 4) return few;
+  return many;
+}
+
+/** Строка для заявки: «5 коробок 60×40×40 см», «3 цилиндра Ø40×100 см» */
+export function placesText(p: Places): string {
+  const dims = p.shape === "box" ? [p.l, p.w, p.h] : [p.d, p.h];
+  const same = dims.every((d) => d.unit === dims[0].unit);
+  const size = dims
+    .map((d) => ru(d.value, 3) + (same ? "" : ` ${d.unit}`))
+    .join("×");
+  const sizeText = (p.shape === "cylinder" ? "Ø" : "") + size + (same ? ` ${dims[0].unit}` : "");
+  const word =
+    p.shape === "box"
+      ? plural(p.count, "коробка", "коробки", "коробок")
+      : plural(p.count, "цилиндр", "цилиндра", "цилиндров");
+  return `${ru(p.count, 0)} ${word} ${sizeText}`;
 }
 
 /** Индекс ступени веса: нижняя граница входит, верхняя нет */
@@ -118,23 +178,13 @@ export function calcTariff(input: { category: CategoryId; weight: number; volume
   };
 }
 
-// ── Форматирование ──────────────────────────────────────────────────────────
-
-const ru = (n: number, digits: number) =>
-  n.toLocaleString("ru-RU", { maximumFractionDigits: digits, minimumFractionDigits: 0 });
-
-/** 3.2 → «3,20» */
-export const fmtRate = (n: number) => n.toFixed(2).replace(".", ",");
-/** Целое с разрядами: 1250 → «1 250» */
-export const fmtInt = (n: number) => ru(Math.round(n), 0);
-export const fmtNum = ru;
-
 /** Текст заявки в WhatsApp */
 export function buildRequestText(p: {
   categoryLabel: string;
   weight: number;
   volume: number;
-  boxes?: { count: number; l: number; w: number; h: number } | null;
+  /** места из помощника расчёта объёма; null - объём ввели руками */
+  places?: Places | null;
   result: CalcResult;
 }): string {
   const { result } = p;
@@ -143,10 +193,7 @@ export function buildRequestText(p: {
     `Категория: ${p.categoryLabel}`,
   ];
   if (p.weight > 0) lines.push(`Вес: ${ru(p.weight, 2)} кг`);
-  if (p.boxes)
-    lines.push(
-      `Коробки: ${ru(p.boxes.count, 0)} шт. по ${ru(p.boxes.l, 1)}×${ru(p.boxes.w, 1)}×${ru(p.boxes.h, 1)} см`,
-    );
+  if (p.places) lines.push(`Места: ${placesText(p.places)}`);
   if (p.volume > 0) lines.push(`Объём: ${ru(p.volume, 3)} м³`);
   if (result.status !== "empty") lines.push(`Плотность: ${fmtInt(result.density)} кг/м³`);
 

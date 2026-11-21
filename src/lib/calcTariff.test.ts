@@ -6,10 +6,13 @@ import {
   DENSITY_LOW,
   EMPTY_MESSAGE,
   HEAVY_DEFAULT,
-  boxesVolume,
   buildRequestText,
   calcTariff,
+  fmtVolume,
   parseNum,
+  placesText,
+  placesVolume,
+  plural,
   type CalcResult,
 } from "./calcTariff";
 import type { CategoryId } from "../content/tariff-grids";
@@ -133,24 +136,61 @@ describe("ввод", () => {
     assert.equal(parseNum(""), 0);
     assert.equal(parseNum("-3"), 0);
   });
-  it("объём по коробкам", () => {
-    assert.equal(boxesVolume(4, 60, 40, 50), 0.48);
-    assert.equal(boxesVolume(0, 60, 40, 50), 0);
+});
+
+describe("помощник расчёта объёма", () => {
+  const cm = (value: number) => ({ value, unit: "см" as const });
+  it("коробка: Д×Ш×В×кол-во, 3 знака", () => {
+    assert.equal(placesVolume({ shape: "box", count: 5, l: cm(60), w: cm(40), h: cm(40) }), 0.48);
+    assert.equal(fmtVolume(0.48), "0,480");
+  });
+  it("единицы см / м / мм в одной коробке", () => {
+    const v = placesVolume({
+      shape: "box",
+      count: 2,
+      l: { value: 0.6, unit: "м" },
+      w: cm(40),
+      h: { value: 400, unit: "мм" },
+    });
+    assert.equal(v, 0.192);
+  });
+  it("цилиндр: π×(D/2)²×В×кол-во", () => {
+    // π × 0,2² × 1 × 3 = 0,37699 → 0,377
+    assert.equal(placesVolume({ shape: "cylinder", count: 3, d: cm(40), h: cm(100) }), 0.377);
+  });
+  it("незаполненный размер или 0 мест - объём 0", () => {
+    assert.equal(placesVolume({ shape: "box", count: 1, l: cm(60), w: cm(0), h: cm(40) }), 0);
+    assert.equal(placesVolume({ shape: "cylinder", count: 0, d: cm(40), h: cm(100) }), 0);
+  });
+  it("склонение мест", () => {
+    assert.deepEqual(
+      [1, 2, 5, 11, 21, 22, 112].map((n) => plural(n, "коробка", "коробки", "коробок")),
+      ["коробка", "коробки", "коробок", "коробок", "коробка", "коробки", "коробок"],
+    );
+  });
+  it("строка для заявки", () => {
+    assert.equal(placesText({ shape: "box", count: 5, l: cm(60), w: cm(40), h: cm(40) }), "5 коробок 60×40×40 см");
+    assert.equal(placesText({ shape: "cylinder", count: 3, d: cm(40), h: cm(100) }), "3 цилиндра Ø40×100 см");
+    assert.equal(
+      placesText({ shape: "box", count: 1, l: { value: 1.2, unit: "м" }, w: cm(80), h: cm(60) }),
+      "1 коробка 1,2 м×80 см×60 см",
+    );
   });
 });
 
 describe("заявка в WhatsApp", () => {
-  it("цена с вилкой и коробками", () => {
+  it("цена с вилкой и местами из помощника", () => {
     const result = calcTariff({ category: "clothes", weight: 100, volume: 0.48 });
+    const cm = (value: number) => ({ value, unit: "см" as const });
     const text = buildRequestText({
       categoryLabel: "Одежда",
       weight: 100,
       volume: 0.48,
-      boxes: { count: 4, l: 60, w: 40, h: 50 },
+      places: { shape: "box", count: 5, l: cm(60), w: cm(40), h: cm(40) },
       result,
     });
     assert.match(text, /Категория: Одежда/);
-    assert.match(text, /Коробки: 4 шт\. по 60×40×50 см/);
+    assert.match(text, /Места: 5 коробок 60×40×40 см/);
     assert.match(text, /Объём: 0,48 м³/);
     assert.match(text, /Плотность: 208 кг\/м³/);
     assert.match(text, /≈ 320 \$ \(от 290 до 350 \$\), тариф 3,20 \$\/кг/);
@@ -163,5 +203,6 @@ describe("заявка в WhatsApp", () => {
       result: calcTariff({ category: "shoes", weight: 100, volume: 0.3 }),
     });
     assert.match(text, /Расчёт: индивидуальный - Плотность выше 250/);
+    assert.doesNotMatch(text, /Места:/);
   });
 });
