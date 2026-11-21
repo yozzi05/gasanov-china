@@ -42,6 +42,9 @@ export function getCategory(id: CategoryId): Category {
   return CATEGORIES.find((c) => c.id === id) ?? CATEGORIES[0];
 }
 
+/** Значение поля после потери фокуса: точку показываем запятой («0.2» → «0,2») */
+export const commaDecimal = (s: string) => s.trim().replace(/\./g, ",");
+
 /** Число из поля ввода: принимает запятую и точку, пробелы между разрядами */
 export function parseNum(s: string): number {
   const n = parseFloat(s.replace(",", ".").replace(/\s/g, ""));

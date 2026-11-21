@@ -2,10 +2,15 @@
 
 import { useId, useState } from "react";
 import { site, whatsappLink } from "@/content/site";
-import { CATEGORIES, RATE_SPREAD, type CategoryId } from "@/content/tariff-grids";
+import {
+  CATEGORIES,
+  RATE_SPREAD,
+  type CategoryId,
+} from "@/content/tariff-grids";
 import {
   buildRequestText,
   calcTariff,
+  commaDecimal,
   fmtInt,
   fmtRate,
   getCategory,
@@ -13,14 +18,19 @@ import {
   type Places,
 } from "@/lib/calcTariff";
 import { InkButton } from "./InkButton";
-import { VolumeHelper, VOLUME_HELPER_EMPTY, type VolumeHelperState } from "./VolumeHelper";
+import {
+  VolumeHelper,
+  VOLUME_HELPER_EMPTY,
+  type VolumeHelperState,
+} from "./VolumeHelper";
 import { WhatsAppIcon } from "./icons";
 
 const { tariffs, calc } = site;
 
 // Шкала плотности: 0 … SCALE_MAX кг/м³, дальше метка стоит у правого края
 const SCALE_MAX = 400;
-const pct = (d: number) => `${(Math.min(Math.max(d, 0), SCALE_MAX) / SCALE_MAX) * 100}%`;
+const pct = (d: number) =>
+  `${(Math.min(Math.max(d, 0), SCALE_MAX) / SCALE_MAX) * 100}%`;
 
 // Калькулятор: вес и объём (объём можно посчитать помощником по местам), категория →
 // плотность, тариф по сетке, цена и срок.
@@ -44,15 +54,46 @@ export function Calculator() {
   const message =
     result.status === "empty"
       ? site.messages.default
-      : buildRequestText({ categoryLabel: cat.label, weight: w, volume: v, places, result });
+      : buildRequestText({
+          categoryLabel: cat.label,
+          weight: w,
+          volume: v,
+          places,
+          result,
+        });
 
   const notes: string[] = [];
-  if (result.status === "empty" || result.status === "below-min") notes.push(result.message);
+  if (result.status === "empty" || result.status === "below-min")
+    notes.push(result.message);
   if (result.status === "individual") notes.push(result.reason);
 
   return (
     <div className="calc">
-      <form className="calc__form" onSubmit={(e) => e.preventDefault()} noValidate>
+      <form
+        className="calc__form"
+        onSubmit={(e) => e.preventDefault()}
+        noValidate
+      >
+        <fieldset className="calc__plans">
+          <legend>Категория</legend>
+          {CATEGORIES.map((c) => (
+            <label
+              key={c.id}
+              className="calc__plan"
+              data-checked={c.id === catId}
+            >
+              <input
+                type="radio"
+                name={`${id}-plan`}
+                value={c.id}
+                checked={c.id === catId}
+                onChange={() => setCatId(c.id)}
+              />
+              <span>{c.label}</span>
+            </label>
+          ))}
+          {cat.hint && <p className="calc__hint">{cat.hint}</p>}
+        </fieldset>
         <div className="calc__field">
           <label htmlFor={`${id}-kg`}>Вес, кг</label>
           <input
@@ -61,6 +102,7 @@ export function Calculator() {
             autoComplete="off"
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
+            onBlur={() => setWeight(commaDecimal(weight))}
           />
         </div>
 
@@ -84,36 +126,48 @@ export function Calculator() {
         <div className="calc__scale">
           <p className="calc__scale-head">
             <span>Плотность</span>
-            <span className="calc__scale-value">{density === null ? "-" : `${fmtInt(density)} кг/м³`}</span>
+            <span className="calc__scale-value">
+              {density === null ? "-" : `${fmtInt(density)} кг/м³`}
+            </span>
           </p>
-          <div className="calc__scale-bar" aria-hidden>
+          <div className="calc__scale-track" aria-hidden>
             <span
-              className="calc__scale-zone"
-              style={{
-                left: pct(cat.density.min),
-                right: cat.density.max === null ? 0 : `calc(100% - ${pct(cat.density.max)})`,
-              }}
-            />
-            {density !== null && <span className="calc__scale-mark" style={{ left: pct(density) }} />}
+              className="calc__scale-label"
+              style={{ left: pct(cat.density.min) }}
+            >
+              зона тарифа
+            </span>
+            <div className="calc__scale-bar">
+              <span
+                className="calc__scale-zone"
+                style={{
+                  left: pct(cat.density.min),
+                  right:
+                    cat.density.max === null
+                      ? 0
+                      : `calc(100% - ${pct(cat.density.max)})`,
+                }}
+              />
+              {density !== null && (
+                <span
+                  className="calc__scale-mark"
+                  style={{ left: pct(density) }}
+                />
+              )}
+            </div>
+            <p className="calc__scale-ticks">
+              {[cat.density.min, cat.density.max].map(
+                (b) =>
+                  b !== null && (
+                    <span key={b} style={{ left: pct(b) }}>
+                      {b}
+                    </span>
+                  ),
+              )}
+              <span className="calc__scale-unit">кг/м³</span>
+            </p>
           </div>
         </div>
-
-        <fieldset className="calc__plans">
-          <legend>Категория</legend>
-          {CATEGORIES.map((c) => (
-            <label key={c.id} className="calc__plan" data-checked={c.id === catId}>
-              <input
-                type="radio"
-                name={`${id}-plan`}
-                value={c.id}
-                checked={c.id === catId}
-                onChange={() => setCatId(c.id)}
-              />
-              <span>{c.label}</span>
-            </label>
-          ))}
-          {cat.hint && <p className="calc__hint">{cat.hint}</p>}
-        </fieldset>
       </form>
 
       <div className="calc__result" aria-live="polite">
@@ -134,23 +188,28 @@ export function Calculator() {
             )}
           </div>
         </dl>
-        {/* три показателя в ряд; подписи стоят в одной строке, значения - в другой */}
+        {/* тариф, ступень веса и срок в ряд; без цены - только срок.
+            Подписи стоят в одной строке, значения - в другой */}
         <dl className="calc__numbers calc__stats">
-          <div>
-            <dt>Тариф</dt>
-            <dd>
-              {result.status === "price" ? `${fmtRate(result.rate)} $/кг` : "-"}
-              {result.status === "price" && (
-                <small>
-                  ± {fmtRate(RATE_SPREAD.min)}-{fmtRate(RATE_SPREAD.max)}
-                </small>
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt>Ступень веса</dt>
-            <dd>{result.status === "price" ? `${result.tier.from}-${result.tier.to} кг` : "-"}</dd>
-          </div>
+          {result.status === "price" && (
+            <>
+              <div>
+                <dt>Тариф</dt>
+                <dd>
+                  {fmtRate(result.rate)} $/кг
+                  <small>
+                    ± {fmtRate(RATE_SPREAD.min)}-{fmtRate(RATE_SPREAD.max)}
+                  </small>
+                </dd>
+              </div>
+              <div>
+                <dt>Ступень веса</dt>
+                <dd>
+                  {result.tier.from}-{result.tier.to} кг
+                </dd>
+              </div>
+            </>
+          )}
           <div>
             <dt>Срок</dt>
             <dd>{days}</dd>
@@ -168,7 +227,12 @@ export function Calculator() {
             ))}
           </ul>
         )}
-        <InkButton href={whatsappLink(message)} variant="red" external className="calc__cta">
+        <InkButton
+          href={whatsappLink(message)}
+          variant="red"
+          external
+          className="calc__cta"
+        >
           <WhatsAppIcon className="h-5 w-5" />
           {calc.cta}
         </InkButton>

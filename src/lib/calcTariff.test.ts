@@ -8,6 +8,7 @@ import {
   HEAVY_DEFAULT,
   buildRequestText,
   calcTariff,
+  commaDecimal,
   fmtVolume,
   parseNum,
   placesText,
@@ -135,6 +136,9 @@ describe("ввод", () => {
     assert.equal(parseNum("1 000"), 1000);
     assert.equal(parseNum(""), 0);
     assert.equal(parseNum("-3"), 0);
+    assert.equal(commaDecimal("0.2"), "0,2");
+    assert.equal(commaDecimal(" 1.25 "), "1,25");
+    assert.equal(commaDecimal("0,480"), "0,480");
   });
 });
 

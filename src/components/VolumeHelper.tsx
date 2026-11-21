@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   UNITS,
+  commaDecimal,
   fmtVolume,
   parseNum,
   placesVolume,
@@ -186,6 +187,9 @@ export function VolumeHelper({
             autoComplete="off"
             value={volume}
             onChange={(e) => onManualVolume(e.target.value)}
+            onBlur={() =>
+              volume.includes(".") && onManualVolume(commaDecimal(volume))
+            }
           />
           <button
             ref={iconRef}
@@ -274,6 +278,10 @@ export function VolumeHelper({
                       autoComplete="off"
                       value={state.dims[k].value}
                       onChange={(e) => setDim(k, { value: e.target.value })}
+                      onBlur={() =>
+                        state.dims[k].value.includes(".") &&
+                        setDim(k, { value: commaDecimal(state.dims[k].value) })
+                      }
                     />
                     <select
                       className="calc__unit"

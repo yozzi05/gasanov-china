@@ -880,11 +880,44 @@ html[data-motion="on"] .waybill[data-in] .waybill__stamp {
   text-transform: none;
   color: var(--color-paper);
 }
+.calc__scale-track {
+  position: relative;
+  padding-top: 24px;
+}
+/* «зона тарифа» над золотой зоной - тем же стилем, что подписи полей */
+.calc__scale-label {
+  position: absolute;
+  top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgba(244, 239, 230, 0.8);
+}
 .calc__scale-bar {
   position: relative;
   height: 2px;
-  margin: 12px 0 6px;
+  margin: 8px 0 0;
   background: rgba(244, 239, 230, 0.25);
+}
+/* границы зоны и единицы под шкалой */
+.calc__scale-ticks {
+  position: relative;
+  height: 16px;
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: rgba(244, 239, 230, 0.8);
+}
+.calc__scale-ticks span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+}
+.calc__scale-ticks .calc__scale-unit {
+  right: 0;
+  transform: none;
 }
 .calc__scale-zone {
   position: absolute;
