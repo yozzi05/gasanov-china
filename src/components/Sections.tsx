@@ -64,10 +64,10 @@ export function Services() {
           ))}
           <li className="service service--cta" data-reveal style={d(2)}>
             <p className="service__title">Не знаете, с чего начать?</p>
-            <p className="service__text">Напишите, что хотите привезти, - подскажу, как лучше.</p>
+            <p className="service__text">Напишите, что хотите привезти, - подскажем, как лучше.</p>
             <InkButton href={whatsappLink()} variant="paper" external>
               <WhatsAppIcon className="h-5 w-5" />
-              Написать Зауру
+              Написать нам
             </InkButton>
           </li>
         </ul>
@@ -121,6 +121,7 @@ export function CalcSection() {
                 <span className="tariffs__name">{p.label}</span>
                 <span className="tariffs__days">
                   {p.days[0]}-{p.days[1]} дней
+                  {"minKgLabel" in p && ` · ${p.minKgLabel}`}
                 </span>
                 <span className="tariffs__price">{price(p.pricePerKg)}</span>
               </li>

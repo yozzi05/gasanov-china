@@ -26,6 +26,10 @@ export function Route() {
                 </span>
               </span>
             ))}
+            {/* когда груз доехал до конца пути, рядом с 15 выезжает «-20» */}
+            <span className="route__day-rest">
+              <span>-{route.daysMax}</span>
+            </span>
           </span>
           <span className="route__day-of">из {route.days}</span>
         </div>
