@@ -6,6 +6,8 @@
   --color-lacquer-deep: #8e0b20;
   --color-ink: #111010;
   --color-paper: #f4efe6;
+  /* бумага на тон светлее рисовой: рисовая бумага пополам с белым (панель калькулятора) */
+  --color-paper-light: #faf7f3;
   --color-gold: #c9a227;
   --color-blossom: #f7cfc9;
 

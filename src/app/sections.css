@@ -1369,3 +1369,94 @@ html[data-motion="on"] .waybill[data-in] .waybill__stamp {
 .route__num i {
   opacity: 0.72;
 }
+
+/* ── Эксперимент calc-light: светлая панель калькулятора и помощника объёма ──
+   Меняются только цвета. Новых цветов нет: тушь, рисовая бумага, бумага светлее
+   (--color-paper-light), золото, лак. Приглушённый текст - тушь 68% (контраст AA). */
+:is(.calc, .vhelp) {
+  --calc-muted: rgba(17, 16, 16, 0.68);
+  --calc-track: color-mix(in srgb, var(--color-gold) 22%, var(--color-paper));
+  background: var(--color-paper-light);
+  color: var(--color-ink);
+}
+/* рамка 1px тушью без теней; box-shadow inset не меняет размеры */
+.calc {
+  box-shadow: inset 0 0 0 1px var(--color-ink);
+}
+:is(.calc, .vhelp) :is(.calc__field label, .calc__plans legend, .calc__numbers dt, .calc__scale-head, .calc__scale-label),
+:is(.calc, .vhelp) :is(.calc__range, .calc__numbers dd small, .calc__hint, .calc__scale-ticks, .calc__disclaimer) {
+  color: var(--calc-muted);
+}
+:is(.calc, .vhelp) .calc__scale-value {
+  color: var(--color-ink);
+}
+/* поля ввода: на тон темнее панели, нижняя граница тушью, фокус - лаковая граница */
+:is(.calc, .vhelp) .calc__field input,
+:is(.calc, .vhelp) .calc__unit {
+  border-bottom-color: var(--color-ink);
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+:is(.calc, .vhelp) .calc__unit {
+  border-left-color: rgba(17, 16, 16, 0.2);
+}
+:is(.calc, .vhelp) :is(.calc__field input, .calc__unit):focus-visible {
+  outline: none;
+  border-bottom-color: var(--color-lacquer);
+}
+/* кнопки-пилюли: контур тушью; выбранная - заливка тушью */
+:is(.calc, .vhelp) .calc__plan {
+  box-shadow: inset 0 0 0 1.5px var(--color-ink);
+  color: var(--color-ink);
+}
+:is(.calc, .vhelp) .calc__plan[data-checked="true"] {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+:is(.calc, .vhelp) .calc__plan:focus-within {
+  outline-color: var(--color-lacquer);
+}
+/* иконка коробки - тушью, разделитель - тушь 25% */
+.calc .calc__icon-btn {
+  color: var(--color-ink);
+}
+.calc .calc__icon-btn::before {
+  background: rgba(17, 16, 16, 0.25);
+}
+.calc .calc__icon-btn[aria-expanded="true"] {
+  color: var(--color-lacquer);
+}
+.calc .calc__icon-btn:focus-visible {
+  outline-color: var(--color-lacquer);
+}
+@media (hover: hover) {
+  .calc .calc__icon-btn:hover {
+    color: var(--color-lacquer);
+  }
+}
+/* шкала: светло-бежевая дорожка, золотая зона, метка тушью */
+.calc .calc__scale-bar {
+  background: var(--calc-track);
+}
+.calc .calc__scale-mark {
+  background: var(--color-ink);
+}
+/* помощник: рамка тушью, золотая линия сверху, без тени */
+.vhelp {
+  border: 1px solid var(--color-ink);
+  border-top-color: var(--color-gold);
+  box-shadow: none;
+}
+.vhelp .vhelp__foot {
+  border-top-color: rgba(17, 16, 16, 0.15);
+}
+.vhelp .vhelp__grip {
+  background: rgba(17, 16, 16, 0.3);
+}
+/* «Готово» на светлом фоне - тёмная кнопка (как вариант ink) */
+.vhelp .vhelp__done {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  --fill: var(--color-lacquer);
+  --hover-text: var(--color-paper);
+}
