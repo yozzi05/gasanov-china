@@ -17,19 +17,19 @@ export function Route() {
         <div className="route__day" aria-hidden>
           <span className="route__day-label">День</span>
           <span className="route__digits">
-            <span className="route__day-count">
-              {["tens", "ones"].map((k) => (
-                <span key={k} className="route__digit">
-                  <span className="route__strip" data-digit={k}>
-                    {DIGITS.map((d) => (
-                      <span key={d}>{d}</span>
-                    ))}
-                  </span>
+            {["tens", "ones"].map((k) => (
+              <span key={k} className="route__digit">
+                <span className="route__strip" data-digit={k}>
+                  {DIGITS.map((d) => (
+                    <span key={d}>{d}</span>
+                  ))}
                 </span>
-              ))}
+              </span>
+            ))}
+            {/* когда груз доехал до конца пути, рядом с 15 выезжает «-20» */}
+            <span className="route__day-rest">
+              <span>-{route.daysMax}</span>
             </span>
-            {/* когда груз доехал до конца пути, вместо числа показывается срок доставки */}
-            <span className="route__day-final">{route.daysRange}</span>
           </span>
           <span className="route__day-of">из {route.days}</span>
         </div>
