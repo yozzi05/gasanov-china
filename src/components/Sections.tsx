@@ -64,10 +64,10 @@ export function Services() {
           ))}
           <li className="service service--cta" data-reveal style={d(2)}>
             <p className="service__title">Не знаете, с чего начать?</p>
-            <p className="service__text">Напишите, что хотите привезти, - подскажу, как лучше.</p>
+            <p className="service__text">Напишите, что хотите привезти, - подскажем, как лучше.</p>
             <InkButton href={whatsappLink()} variant="paper" external>
               <WhatsAppIcon className="h-5 w-5" />
-              Написать Зауру
+              Написать нам
             </InkButton>
           </li>
         </ul>
