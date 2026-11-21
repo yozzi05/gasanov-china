@@ -1152,6 +1152,53 @@ html[data-motion="on"] .waybill[data-reveal] {
 .reviews__track::-webkit-scrollbar {
   display: none;
 }
+.reviews__track[data-dragging] {
+  scroll-snap-type: none;
+  cursor: grabbing;
+}
+.reviews__track[data-dragging] * {
+  pointer-events: none;
+}
+/* Стрелки ленты отзывов - только на десктопе с мышью */
+.reviews__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+.reviews__nav {
+  display: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .reviews__track {
+    cursor: grab;
+  }
+  .reviews__nav {
+    display: flex;
+    flex: none;
+    gap: 10px;
+  }
+  .reviews__nav button {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1.5px var(--color-paper);
+    color: var(--color-paper);
+    font-size: 22px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s, opacity 0.3s;
+  }
+  .reviews__nav button:hover:not(:disabled) {
+    background: var(--color-paper);
+    color: var(--color-ink);
+  }
+  .reviews__nav button:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+}
 .review {
   flex: none;
   width: min(78vw, 340px);

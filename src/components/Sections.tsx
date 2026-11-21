@@ -11,6 +11,7 @@ import { Pic } from "./Pic";
 import { Seal } from "./Seal";
 import { Calculator } from "./Calculator";
 import { RateValue } from "./Rate";
+import { ReviewsNav } from "./ReviewsNav";
 import { TelegramIcon, WhatsAppIcon } from "./icons";
 
 type ImageName = keyof typeof manifest;
@@ -222,7 +223,7 @@ export function Reviews() {
   return (
     <section className="reviews grain" aria-label="Отзывы">
       <InkEdge color={INK} variant={1} />
-      <div className="wrap">
+      <div className="wrap reviews__head">
         <h2 className="htitle__text" data-reveal>
           {reviews.title.map((l, i) => (
             <span key={i} className="block">
@@ -230,8 +231,9 @@ export function Reviews() {
             </span>
           ))}
         </h2>
+        <ReviewsNav target="[data-reviews-track]" />
       </div>
-      <ul className="reviews__track" tabIndex={0} aria-label="Лента отзывов">
+      <ul className="reviews__track" tabIndex={0} aria-label="Лента отзывов" data-reviews-track>
         {/* Отзывы из кейсов: цитата или скриншот переписки, открывают окно кейса */}
         {cases
           .flatMap((c) => c.reviews.map((r) => ({ c, r })))
