@@ -606,8 +606,8 @@ html[data-motion="on"] .waybill[data-in] .waybill__stamp {
 }
 .calc__numbers {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px 12px;
 }
 .calc__price {
   grid-column: 1 / -1;
@@ -615,13 +615,149 @@ html[data-motion="on"] .waybill[data-in] .waybill__stamp {
 .calc__numbers dd {
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: 30px;
+  font-size: 22px;
   line-height: 1;
 }
+.calc__numbers dd small {
+  display: block;
+  margin-top: 5px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  color: rgba(244, 239, 230, 0.8);
+}
 .calc__price dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 16px;
   font-size: clamp(52px, 14vw, 84px);
   line-height: 0.9;
   white-space: nowrap;
+}
+/* Тариф, ступень веса и срок: подписи в первой строке сетки, значения во второй -
+   так значения стоят ровно, даже если подпись переносится */
+.calc__stats {
+  grid-template-rows: auto auto;
+  grid-auto-flow: column;
+  row-gap: 8px;
+  margin-top: 18px;
+}
+.calc__stats > div {
+  display: contents;
+}
+.calc__stats dt {
+  align-self: end;
+  margin-bottom: 0;
+}
+/* вилка цены рядом с суммой */
+.calc__range {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.45;
+  color: rgba(244, 239, 230, 0.8);
+}
+/* «Индивидуальный расчёт» вместо суммы */
+.calc__price dd.calc__price-text {
+  font-size: clamp(40px, 12.2vw, 64px);
+  white-space: normal;
+}
+/* следующая ступень веса дешевле - плашка с тонкой золотой рамкой */
+.calc__next {
+  margin-top: 18px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-gold);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* Переключатель «Знаю объём / Посчитать по коробкам» */
+.calc__modes {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 22px;
+  border-bottom: 1px solid rgba(244, 239, 230, 0.2);
+}
+.calc__mode {
+  margin-bottom: -1px;
+  padding: 0 0 10px;
+  border-bottom: 2px solid transparent;
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(244, 239, 230, 0.6);
+  cursor: pointer;
+  transition: color 0.3s, border-color 0.3s;
+}
+.calc__mode[aria-pressed="true"] {
+  border-bottom-color: var(--color-gold);
+  color: var(--color-paper);
+}
+.calc__mode:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+.calc__dims {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+/* Шкала плотности: золотая зона - допустимая плотность категории, белая метка - груз */
+.calc__scale {
+  grid-column: 1 / -1;
+  padding-top: 2px;
+}
+.calc__scale-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 230, 0.8);
+}
+.calc__scale-value {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-paper);
+}
+.calc__scale-value i {
+  font-style: normal;
+}
+.calc__scale-bar {
+  position: relative;
+  height: 2px;
+  margin: 12px 0 6px;
+  background: rgba(244, 239, 230, 0.25);
+}
+.calc__scale-zone {
+  position: absolute;
+  top: -1px;
+  height: 4px;
+  background: var(--color-gold);
+}
+.calc__scale-mark {
+  position: absolute;
+  top: 50%;
+  width: 3px;
+  height: 16px;
+  background: var(--color-paper);
+  transform: translate(-50%, -50%);
+  transition: left 0.3s var(--ease-ink);
+}
+.calc__hint {
+  width: 100%;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(244, 239, 230, 0.8);
 }
 .calc__notes {
   margin-top: 16px;
@@ -927,6 +1063,9 @@ html[data-motion="on"] .waybill[data-in] .waybill__stamp {
   .calc__form,
   .calc__result {
     padding: 30px 32px;
+  }
+  .calc__numbers dd {
+    font-size: 30px;
   }
   .calc__price dd {
     font-size: clamp(64px, 6vw, 104px);

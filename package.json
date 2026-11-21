@@ -13,7 +13,8 @@
     "serve": "node scripts/serve-out.mjs",
     "art": "node scripts/build-art.mjs",
     "rate": "node scripts/fetch-rate.mjs",
-    "prebuild": "node scripts/fetch-rate.mjs"
+    "prebuild": "node scripts/fetch-rate.mjs",
+    "test": "node --import ./scripts/ts-resolve.mjs --test src/lib/*.test.ts"
   },
   "dependencies": {
     "gsap": "^3.15.1",

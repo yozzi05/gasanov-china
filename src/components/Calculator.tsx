@@ -2,90 +2,147 @@
 
 import { useId, useState } from "react";
 import { site, whatsappLink } from "@/content/site";
+import { CATEGORIES, RATE_SPREAD, type CategoryId } from "@/content/tariff-grids";
+import {
+  boxesVolume,
+  buildRequestText,
+  calcTariff,
+  fmtInt,
+  fmtNum,
+  fmtRate,
+  getCategory,
+  parseNum,
+} from "@/lib/calcTariff";
 import { InkButton } from "./InkButton";
 import { WhatsAppIcon } from "./icons";
 
 const { tariffs, calc } = site;
-const fmt = (n: number, digits = 0) =>
-  n.toLocaleString("ru-RU", { maximumFractionDigits: digits, minimumFractionDigits: 0 });
-const toNum = (s: string) => {
-  const n = parseFloat(s.replace(",", ".").replace(/\s/g, ""));
-  return Number.isFinite(n) && n > 0 ? n : 0;
-};
 
-// Калькулятор: вес, объём, категория → плотность, ориентировочная цена и срок.
-// Тарифы берутся из src/content/site.ts.
+// Шкала плотности: 0 … SCALE_MAX кг/м³, дальше метка стоит у правого края
+const SCALE_MAX = 400;
+const pct = (d: number) => `${(Math.min(Math.max(d, 0), SCALE_MAX) / SCALE_MAX) * 100}%`;
+
+type Mode = "volume" | "boxes";
+
+// Калькулятор: вес и объём (или коробки), категория → плотность, тариф по сетке, цена и срок.
+// Сетки - src/content/tariff-grids.ts, расчёт - src/lib/calcTariff.ts.
 export function Calculator() {
   const id = useId();
+  const [mode, setMode] = useState<Mode>("volume");
   const [weight, setWeight] = useState("100");
   const [volume, setVolume] = useState("0,5");
-  const [planId, setPlanId] = useState<string>(tariffs.plans[0].id);
+  const [box, setBox] = useState({ count: "4", l: "60", w: "40", h: "50" });
+  const [catId, setCatId] = useState<CategoryId>(CATEGORIES[0].id);
 
-  const plan = tariffs.plans.find((p) => p.id === planId) ?? tariffs.plans[0];
-  const w = toNum(weight);
-  const v = toNum(volume);
-  const ready = w > 0 && v > 0;
-  const density = ready ? w / v : 0;
-  const [pMin, pMax] = plan.pricePerKg;
-  const priceText = !ready
-    ? "-"
-    : pMin === pMax
-      ? `≈ ${fmt(w * pMin)} $`
-      : `${fmt(w * pMin)} - ${fmt(w * pMax)} $`;
-  const daysText = `${plan.days[0]}-${plan.days[1]} дней`;
+  const cat = getCategory(catId);
+  const w = parseNum(weight);
+  const boxes = { count: parseNum(box.count), l: parseNum(box.l), w: parseNum(box.w), h: parseNum(box.h) };
+  const v = mode === "volume" ? parseNum(volume) : boxesVolume(boxes.count, boxes.l, boxes.w, boxes.h);
+  const result = calcTariff({ category: catId, weight: w, volume: v });
+  const density = result.status === "empty" ? null : result.density;
+  const days = `${cat.days[0]}-${cat.days[1]} дней`;
+
+  const message =
+    result.status === "empty"
+      ? site.messages.default
+      : buildRequestText({
+          categoryLabel: cat.label,
+          weight: w,
+          volume: v,
+          boxes: mode === "boxes" ? boxes : null,
+          result,
+        });
 
   const notes: string[] = [];
-  if (ready && "minKg" in plan && w < plan.minKg) notes.push(plan.minKgHint);
-  if (ready && density < tariffs.minDensity)
-    notes.push(
-      `Плотность ниже ${tariffs.minDensity} кг/м³ - лёгкий объёмный груз считаем индивидуально, цена за кг будет выше.`,
-    );
-  if (ready && w >= tariffs.individualFromKg)
-    notes.push(`От ${tariffs.individualFromKg} кг - индивидуальный расчёт, цена обычно ниже.`);
+  if (result.status === "empty" || result.status === "below-min") notes.push(result.message);
+  if (result.status === "individual") notes.push(result.reason);
 
-  const message = ready
-    ? `Здравствуйте, Заур! Хочу получить точный расчёт доставки из Китая.\n` +
-      `Категория: ${plan.label}\nВес: ${fmt(w, 2)} кг\nОбъём: ${fmt(v, 3)} м³\n` +
-      `Плотность: ${fmt(density)} кг/м³\nОриентир с сайта: ${priceText}, ${daysText}`
-    : site.messages.default;
+  const field = (key: string, label: string, value: string, onChange: (s: string) => void) => (
+    <div className="calc__field" key={key}>
+      <label htmlFor={`${id}-${key}`}>{label}</label>
+      <input
+        id={`${id}-${key}`}
+        inputMode="decimal"
+        autoComplete="off"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </div>
+  );
+  const boxField = (k: keyof typeof box, label: string) =>
+    field(`box-${k}`, label, box[k], (s) => setBox((b) => ({ ...b, [k]: s })));
 
   return (
     <div className="calc">
       <form className="calc__form" onSubmit={(e) => e.preventDefault()} noValidate>
-        <div className="calc__field">
-          <label htmlFor={`${id}-w`}>Вес, кг</label>
-          <input
-            id={`${id}-w`}
-            inputMode="decimal"
-            autoComplete="off"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-          />
+        <div className="calc__modes" role="group" aria-label="Как указать объём">
+          {(
+            [
+              ["volume", "Знаю объём"],
+              ["boxes", "Посчитать по коробкам"],
+            ] as const
+          ).map(([m, label]) => (
+            <button
+              key={m}
+              type="button"
+              className="calc__mode"
+              aria-pressed={mode === m}
+              onClick={() => setMode(m)}
+            >
+              {label}
+            </button>
+          ))}
         </div>
-        <div className="calc__field">
-          <label htmlFor={`${id}-v`}>Объём, м³</label>
-          <input
-            id={`${id}-v`}
-            inputMode="decimal"
-            autoComplete="off"
-            value={volume}
-            onChange={(e) => setVolume(e.target.value)}
-          />
+
+        {field("kg", "Вес, кг", weight, setWeight)}
+        {mode === "volume" ? (
+          field("m3", "Объём, м³", volume, setVolume)
+        ) : (
+          <>
+            {boxField("count", "Коробок, шт")}
+            <div className="calc__dims">
+              {boxField("l", "Длина, см")}
+              {boxField("w", "Ширина, см")}
+              {boxField("h", "Высота, см")}
+            </div>
+          </>
+        )}
+
+        <div className="calc__scale">
+          <p className="calc__scale-head">
+            <span>Плотность</span>
+            <span className="calc__scale-value">
+              {density === null ? "-" : `${fmtInt(density)} кг/м³`}
+              {mode === "boxes" && v > 0 && <i> · {fmtNum(v, 3)} м³</i>}
+            </span>
+          </p>
+          <div className="calc__scale-bar" aria-hidden>
+            <span
+              className="calc__scale-zone"
+              style={{
+                left: pct(cat.density.min),
+                right: cat.density.max === null ? 0 : `calc(100% - ${pct(cat.density.max)})`,
+              }}
+            />
+            {density !== null && <span className="calc__scale-mark" style={{ left: pct(density) }} />}
+          </div>
         </div>
+
         <fieldset className="calc__plans">
           <legend>Категория</legend>
-          {tariffs.plans.map((p) => (
-            <label key={p.id} className="calc__plan" data-checked={p.id === planId}>
+          {CATEGORIES.map((c) => (
+            <label key={c.id} className="calc__plan" data-checked={c.id === catId}>
               <input
                 type="radio"
                 name={`${id}-plan`}
-                value={p.id}
-                checked={p.id === planId}
-                onChange={() => setPlanId(p.id)}
+                value={c.id}
+                checked={c.id === catId}
+                onChange={() => setCatId(c.id)}
               />
-              <span>{p.label}</span>
+              <span>{c.label}</span>
             </label>
           ))}
+          {cat.hint && <p className="calc__hint">{cat.hint}</p>}
         </fieldset>
       </form>
 
@@ -93,17 +150,47 @@ export function Calculator() {
         <dl className="calc__numbers">
           <div className="calc__price">
             <dt>Ориентировочная цена</dt>
-            <dd>{priceText}</dd>
+            {result.status === "price" ? (
+              <dd>
+                ≈ {fmtInt(result.total)} $
+                <span className="calc__range">
+                  от {fmtInt(result.min)} до {fmtInt(result.max)} $
+                </span>
+              </dd>
+            ) : result.status === "individual" ? (
+              <dd className="calc__price-text">{result.message}</dd>
+            ) : (
+              <dd>-</dd>
+            )}
+          </div>
+        </dl>
+        {/* три показателя в ряд; подписи стоят в одной строке, значения - в другой */}
+        <dl className="calc__numbers calc__stats">
+          <div>
+            <dt>Тариф</dt>
+            <dd>
+              {result.status === "price" ? `${fmtRate(result.rate)} $/кг` : "-"}
+              {result.status === "price" && (
+                <small>
+                  ± {fmtRate(RATE_SPREAD.min)}-{fmtRate(RATE_SPREAD.max)}
+                </small>
+              )}
+            </dd>
           </div>
           <div>
-            <dt>Плотность</dt>
-            <dd>{ready ? `${fmt(density)} кг/м³` : "-"}</dd>
+            <dt>Ступень веса</dt>
+            <dd>{result.status === "price" ? `${result.tier.from}-${result.tier.to} кг` : "-"}</dd>
           </div>
           <div>
             <dt>Срок</dt>
-            <dd>{daysText}</dd>
+            <dd>{days}</dd>
           </div>
         </dl>
+        {result.status === "price" && result.next && (
+          <p className="calc__next">
+            От {result.next.from} кг тариф {fmtRate(result.next.rate)} $/кг
+          </p>
+        )}
         {notes.length > 0 && (
           <ul className="calc__notes">
             {notes.map((n) => (
