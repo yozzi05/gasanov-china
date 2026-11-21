@@ -12,6 +12,7 @@ const TYPES = {
   ".json": "application/json", ".txt": "text/plain; charset=utf-8", ".xml": "application/xml",
   ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp",
   ".avif": "image/avif", ".woff2": "font/woff2", ".ico": "image/x-icon",
+  ".mp4": "video/mp4", ".vtt": "text/vtt; charset=utf-8",
 };
 const TEXT = new Set([".html", ".js", ".css", ".json", ".txt", ".xml", ".svg"]);
 

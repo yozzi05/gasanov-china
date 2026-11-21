@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { site, whatsappLink } from "@/content/site";
+import { caseAnchor, cases } from "@/content/cases";
 import manifest from "@/content/images.json";
 import { Hanzi, HanziWord } from "./Hanzi";
 import { HanziTitle } from "./HanziTitle";
@@ -231,15 +232,48 @@ export function Reviews() {
         </h2>
       </div>
       <ul className="reviews__track" tabIndex={0} aria-label="Лента отзывов">
+        {/* Отзывы из кейсов: цитата или скриншот переписки, открывают окно кейса */}
+        {cases
+          .flatMap((c) => c.reviews.map((r) => ({ c, r })))
+          .map(({ c, r }, i) => {
+            const anchor = caseAnchor(c.id);
+            const label = `Кейс ${c.id} · ${c.title}`;
+            return r.type === "quote" ? (
+              <li key={`${c.id}-${i}`} className="review review--quote" data-reveal style={d(i % 3)}>
+                <blockquote className="review__quote">
+                  <p>«{r.text}»</p>
+                </blockquote>
+                <p className="review__case">{label}</p>
+                <InkButton
+                  href={`#${anchor}`}
+                  variant="outline"
+                  className="review__btn"
+                  data-case-open={anchor}
+                  aria-haspopup="dialog"
+                  aria-label={`${reviews.caseLabel} ${c.id}: ${c.title}`}
+                >
+                  {reviews.caseLabel}
+                </InkButton>
+              </li>
+            ) : (
+              <li key={`${c.id}-${i}`} className="review review--shot" data-reveal style={d(i % 3)}>
+                <a
+                  href={`#${anchor}`}
+                  data-case-open={anchor}
+                  aria-haspopup="dialog"
+                  aria-label={`${reviews.caseLabel} ${c.id}: ${c.title}`}
+                >
+                  <Pic name={r.src as ImageName} alt={r.alt} sizes="(max-width: 767px) 78vw, 340px" />
+                  <span className="review__case review__case--shot">
+                    {label} <span aria-hidden>→</span>
+                  </span>
+                </a>
+              </li>
+            );
+          })}
         {reviews.items.map((r, i) => (
-          <li key={i} className="review" data-reveal style={d(i)}>
+          <li key={r.image} className="review" data-reveal style={d(i % 3)}>
             <Pic name={r.image as ImageName} alt={r.alt} sizes="(max-width: 767px) 78vw, 340px" />
-          </li>
-        ))}
-        {Array.from({ length: reviews.placeholders }, (_, i) => (
-          <li key={`p${i}`} className="review review--empty" data-reveal style={d(i + 1)}>
-            <Seal className="h-14 w-14 opacity-60" />
-            <p>Скриншот переписки появится здесь</p>
           </li>
         ))}
         <li className="review review--more" data-reveal style={d(3)}>

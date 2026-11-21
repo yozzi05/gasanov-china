@@ -78,5 +78,61 @@
   "zaur-wall": {
     "width": 2410,
     "height": 1330
+  },
+  "cases/g17-001/poster": {
+    "width": 720,
+    "height": 1272
+  },
+  "cases/g17-002/poster": {
+    "width": 720,
+    "height": 1280
+  },
+  "cases/g17-003/chat": {
+    "width": 1206,
+    "height": 2091
+  },
+  "cases/g17-003/poster": {
+    "width": 720,
+    "height": 1280
+  },
+  "cases/g17-004/photo": {
+    "width": 948,
+    "height": 1660
+  },
+  "cases/g17-004/poster": {
+    "width": 720,
+    "height": 1260
+  },
+  "cases/g17-005/poster": {
+    "width": 720,
+    "height": 1280
+  },
+  "cases/g17-006/chat-factory": {
+    "width": 1206,
+    "height": 1689
+  },
+  "cases/g17-006/chat-review": {
+    "width": 1206,
+    "height": 1226
+  },
+  "cases/g17-006/photo-1": {
+    "width": 1672,
+    "height": 941
+  },
+  "cases/g17-006/photo-2": {
+    "width": 1672,
+    "height": 941
+  },
+  "cases/g17-007/poster": {
+    "width": 720,
+    "height": 1290
+  },
+  "cases/g17-008/photo": {
+    "width": 1206,
+    "height": 2144
+  },
+  "cases/g17-008/poster": {
+    "width": 720,
+    "height": 1280
   }
 }

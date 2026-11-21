@@ -58,6 +58,40 @@ for (const file of fs.readdirSync(SRC).sort()) {
   console.log(name, `${meta.width}x${meta.height}`);
 }
 
+// Кейсы: assets/cases/<id>/ → public/cases/<id>/.
+// Фото и скриншоты (*.jpg) нарезаются в AVIF + WebP, в манифест попадают как «cases/<id>/<имя>».
+// Видео (video.mp4, уже сжато в H.264) и субтитры (captions.vtt) копируются как есть.
+// SKIP: файлы, которые на сайт не попадают (у G17-004 в переписке грубоватое слово -
+// её текст дан цитатой в блоке отзывов).
+{
+  const CASES = "assets/cases";
+  const SKIP = new Set(["g17-004/chat.jpg"]);
+  for (const id of fs.existsSync(CASES) ? fs.readdirSync(CASES).sort() : []) {
+    const dir = path.join(CASES, id);
+    if (!fs.statSync(dir).isDirectory()) continue;
+    const out = path.join("public/cases", id);
+    fs.mkdirSync(out, { recursive: true });
+    for (const file of fs.readdirSync(dir).sort()) {
+      const { name, ext } = path.parse(file);
+      if (SKIP.has(`${id}/${file}`)) continue;
+      if (ext === ".mp4" || ext === ".vtt") {
+        fs.copyFileSync(path.join(dir, file), path.join(out, file));
+        continue;
+      }
+      if (ext !== ".jpg") continue;
+      const img = sharp(path.join(dir, file)).rotate();
+      const meta = await img.metadata();
+      manifest[`cases/${id}/${name}`] = { width: meta.width, height: meta.height };
+      for (const w of WIDTHS) {
+        const base = img.clone().resize({ width: Math.min(w, meta.width), withoutEnlargement: true });
+        await base.clone().avif({ quality: 52, effort: 6 }).toFile(path.join(out, `${name}-${w}.avif`));
+        await base.clone().webp({ quality: 74, effort: 5 }).toFile(path.join(out, `${name}-${w}.webp`));
+      }
+      console.log(`cases/${id}/${name}`, `${meta.width}x${meta.height}`);
+    }
+  }
+}
+
 // Бумажное зерно: маленькая бесшовная плитка шума
 {
   const S = 96;

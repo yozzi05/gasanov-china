@@ -5,6 +5,7 @@ import { BASE_PATH } from "@/lib/basePath";
 import "./globals.css";
 import "./sections.css";
 import "./hero-scene.css";
+import "./case-modal.css";
 
 const sofia = Sofia_Sans_Extra_Condensed({
   variable: "--font-sofia",

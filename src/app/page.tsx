@@ -8,6 +8,7 @@ import { About, CalcSection, Final, Footer, RateSection, Reviews, Services, Stat
 import { MobileBar } from "@/components/MobileBar";
 import { Preloader } from "@/components/Preloader";
 import { LateFx } from "@/components/LateFx";
+import { CaseDialog } from "@/components/CaseDialog";
 
 // Разметка Organization для поисковиков
 const tel = site.contacts.phoneHref.replace("tel:", "");
@@ -58,6 +59,7 @@ export default function Home() {
       </main>
       <Footer />
       <LateFx />
+      <CaseDialog />
       <MobileBar />
     </>
   );
