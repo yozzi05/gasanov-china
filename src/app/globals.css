@@ -920,6 +920,28 @@ html.has-cursor * {
   justify-items: end;
   pointer-events: none;
 }
+/* Счётчик дней и срок доставки стоят в одной ячейке и сменяют друг друга */
+.route__day-count,
+.route__day-final {
+  grid-area: 1 / 1;
+  display: grid;
+  justify-items: inherit;
+  transition:
+    opacity 0.5s,
+    transform 0.6s var(--ease-ink);
+}
+.route__day-final {
+  opacity: 0;
+  transform: translateY(24px);
+}
+.route[data-arrived] .route__day-count {
+  opacity: 0;
+  transform: translateY(-24px);
+}
+.route[data-arrived] .route__day-final {
+  opacity: 1;
+  transform: none;
+}
 .route__day-label,
 .route__day-of {
   font-size: 11px;

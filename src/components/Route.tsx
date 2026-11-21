@@ -15,19 +15,27 @@ export function Route() {
         <HanziTitle word={route.hanzi} lines={route.title} className="route__head" />
 
         <div className="route__day" aria-hidden>
-          <span className="route__day-label">День</span>
-          <span className="route__digits">
-            {["tens", "ones"].map((k) => (
-              <span key={k} className="route__digit">
-                <span className="route__strip" data-digit={k}>
-                  {DIGITS.map((d) => (
-                    <span key={d}>{d}</span>
-                  ))}
+          <div className="route__day-count">
+            <span className="route__day-label">День</span>
+            <span className="route__digits">
+              {["tens", "ones"].map((k) => (
+                <span key={k} className="route__digit">
+                  <span className="route__strip" data-digit={k}>
+                    {DIGITS.map((d) => (
+                      <span key={d}>{d}</span>
+                    ))}
+                  </span>
                 </span>
-              </span>
-            ))}
-          </span>
-          <span className="route__day-of">из {route.days}</span>
+              ))}
+            </span>
+            <span className="route__day-of">из {route.days}</span>
+          </div>
+          {/* когда груз доехал до конца пути, счётчик сменяется сроком доставки */}
+          <div className="route__day-final">
+            <span className="route__day-label">Срок доставки</span>
+            <span className="route__digits">{route.daysRange}</span>
+            <span className="route__day-of">дней</span>
+          </div>
         </div>
 
         <div className="route__map">

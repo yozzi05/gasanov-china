@@ -41,6 +41,7 @@ export function RouteFx({ days }: { days: number }) {
     const state = { p: 0 };
     let active = -1;
     let day = -1;
+    let arrived = false;
 
     const render = () => {
       const p = state.p;
@@ -67,6 +68,13 @@ export function RouteFx({ days }: { days: number }) {
         nodes.forEach((n, i) => n.toggleAttribute("data-current", i === idx));
       }
 
+      // груз доехал до двери клиента - вместо счётчика показываем срок доставки
+      const end = p >= 0.995;
+      if (end !== arrived) {
+        arrived = end;
+        root.toggleAttribute("data-arrived", end);
+      }
+
       const d = 1 + Math.round((days - 1) * p);
       if (d !== day) {
         day = d;
@@ -91,6 +99,7 @@ export function RouteFx({ days }: { days: number }) {
     return () => {
       ctx.revert();
       delete root.dataset.animated;
+      root.removeAttribute("data-arrived");
     };
   }, [days]);
 
