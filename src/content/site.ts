@@ -39,7 +39,7 @@ export const site = {
     { label: "Маршрут", href: "#route" },
     { label: "Кейсы", href: "#cases" },
     { label: "Тарифы", href: "#calc" },
-    { label: "О Зауре", href: "#about" },
+    { label: "О компании", href: "#about" },
   ],
 
   hero: {
