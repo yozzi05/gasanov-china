@@ -191,9 +191,21 @@
     font-size: 28.7vw;
   }
   /* Подзаголовок и кнопки сдвинуты влево от камней: правый край блока стоит
-     на 91% ширины сцены (было 87%, сдвинуто правее на пятую часть ширины блока) */
+     на 89% ширины сцены (87% + десятая часть ширины блока) */
   .hero--scene .hero__right {
-    margin-right: max(0px, var(--scene-w) * 0.09 - var(--edge) - var(--gutter));
+    margin-right: max(0px, var(--scene-w) * 0.11 - var(--edge) - var(--gutter));
+  }
+}
+
+/* Блок справа стоит в один ряд с первой строкой оффера, кнопки - в ряд.
+   Уже 1200 px кнопки в ряд заходят на фигуру, там они остаются одна под другой */
+@media (min-width: 1200px) {
+  .hero--scene .hero__right {
+    align-self: start;
+    max-width: none;
+  }
+  .hero--scene .hero__cta {
+    flex-wrap: nowrap;
   }
 }
 
