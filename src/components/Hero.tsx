@@ -1,69 +1,90 @@
 import { site, whatsappLink } from "@/content/site";
-import { Hanzi, HanziWord } from "./Hanzi";
-import { InkTree } from "./InkTree";
+import { HanziWord } from "./Hanzi";
 import { Lantern } from "./Lantern";
 import { Pic } from "./Pic";
 import { InkButton } from "./InkButton";
 import { Petals } from "./Petals";
 
-// Первый экран. Разметка статичная (рендерится на сервере),
-// всё движение подключает HeroFx.
+// Ширина сцены на экране: она закрывает первый экран целиком (cover).
+// На телефоне сцена в 3-4 раза шире экрана и видна только её середина, поэтому там
+// браузеру называем размер поменьше - иначе он тянет самые тяжёлые файлы.
+const SCENE_W = "max(100vw, 178vh)";
+const WALL_SIZES = `(max-width: 767px) 190vw, ${SCENE_W}`;
+const TREE_SIZES = `(max-width: 767px) 85vw, calc(${SCENE_W} * 0.52)`;
+
+// Первый экран - сцена из слоёв (эксперимент hero-scene).
+// Разметка статичная (рендерится на сервере), всё движение подключает HeroFx:
+// data-mouse - амплитуда смещения слоя в px, data-tree / data-photo / data-lantern - появление.
 export function Hero() {
   const { hero } = site;
   return (
-    <section id="top" className="hero grain" data-hero>
-      <div className="hero__bg" />
-
-      <div className="hero__watermark" data-scroll="-10">
-        <Hanzi char={hero.hanzi[1]} className="w-full" />
-      </div>
-
-      <div className="hero__tree" data-scroll="-14">
-        <div data-mouse="14">
-          <div data-tree>
-            <InkTree />
+    <section id="top" className="hero hero--scene grain" data-hero>
+      {/* Дальние слои: стена, фигура, деревья */}
+      <div className="scene">
+        <div className="scene__wall">
+          <div data-mouse="6">
+            <Pic name="scene-wall" alt="" sizes={WALL_SIZES} eager />
           </div>
         </div>
-      </div>
 
-      <div className="hero__name" aria-hidden data-scroll="26">
-        <div data-mouse="6">
-          {[...site.name].map((ch, i) => (
-            <span key={i} className="hero__letter-mask">
-              <span className="hero__letter" data-letter>
-                {ch}
+        {/* Фамилия: перед крышей (она часть стены), за фигурой и деревьями */}
+        <div className="scene__name" data-mouse="9" aria-hidden>
+          <div className="hero__name">
+            {[...site.name].map((ch, i) => (
+              <span key={i} className="hero__letter-mask">
+                <span className="hero__letter" data-letter={i}>
+                  {ch}
+                </span>
               </span>
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className="hero__tree hero__tree--front" data-scroll="-20">
-        <div data-mouse="20">
-          <div data-tree>
-            <InkTree layer="front" />
+            ))}
           </div>
         </div>
-      </div>
 
-      <div className="hero__photo" data-scroll="9">
-        <div data-mouse="-12">
-          <div className="h-full" data-photo>
-            <Pic
-              name="zaur-cutout"
-              alt="Заур Гасанов, основатель G17"
-              sizes="(max-width: 767px) 86vw, 44vw"
-              eager
-            />
+        <div className="scene__zaur">
+          <div data-mouse="12">
+            <div data-photo>
+              <span className="scene__shadow" />
+              <Pic
+                name="zaur-walk"
+                alt="Заур Гасанов, основатель G17"
+                sizes={`calc(${SCENE_W} * 0.12)`}
+                eager
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="scene__tree scene__tree--left">
+          <div data-mouse="18">
+            <div data-tree="0% 100%">
+              <Pic name="scene-trees-left" alt="" sizes={TREE_SIZES} />
+            </div>
+          </div>
+        </div>
+        <div className="scene__tree scene__tree--right">
+          <div data-mouse="22">
+            <div data-tree="100% 100%">
+              <Pic name="scene-trees-right" alt="" sizes={TREE_SIZES} />
+            </div>
           </div>
         </div>
       </div>
 
       <div className="hero__shade" />
-      <Petals />
+      <div className="hero__topshade" />
 
-      <Lantern kind="wa" href={whatsappLink()} label="Написать в WhatsApp" />
-      <Lantern kind="tg" href={site.contacts.telegram} label="Написать в Telegram" />
+      {/* Фонари: левый и правый - ссылки на мессенджеры, средний декоративный */}
+      <div className="scene scene--front">
+        <div className="scene__lanterns" data-mouse="32">
+          <Lantern kind="wa" href={whatsappLink()} label="Написать в WhatsApp" />
+          <Lantern kind="mid" />
+          <Lantern kind="tg" href={site.contacts.telegram} label="Написать в Telegram" />
+        </div>
+      </div>
+
+      <div className="hero__petals-layer" data-mouse="40">
+        <Petals />
+      </div>
 
       <div className="hero__side" aria-hidden data-fade>
         <HanziWord word={hero.hanzi} className="flex flex-col gap-1" charClassName="h-7 w-7" />
@@ -95,7 +116,6 @@ export function Hero() {
           </div>
         </div>
       </div>
-
     </section>
   );
 }

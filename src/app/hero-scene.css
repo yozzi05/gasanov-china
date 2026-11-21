@@ -1,0 +1,272 @@
+/* ── Эксперимент: первый экран как сцена из слоёв ─────────────────────────
+   Образец - assets/reference/hero-scene-ref.png (1672×941).
+   Сцена закрывает первый экран целиком (cover), слои стоят в процентах от неё.
+   Надпись, оффер, подзаголовок, кнопки и градиент - как в основной версии
+   (правила в globals.css), здесь только сама сцена. */
+
+.hero--scene {
+  --hero-h: max(100svh, 700px);
+  /* высота сцены = высота первого экрана, но не меньше, чем нужно, чтобы закрыть ширину */
+  --scene-h: max(var(--hero-h), 100vw * 941 / 1672);
+  --scene-w: calc(var(--scene-h) * 1672 / 941);
+  /* на сколько сцена выступает за левый и правый край экрана */
+  --edge: calc((var(--scene-w) - 100vw) / 2);
+  /* на сколько сцена поднята (телефон: чтобы над текстом было видно больше фигуры) */
+  --lift: 0px;
+}
+
+.scene {
+  position: absolute;
+  z-index: -4;
+  left: 50%;
+  top: 50%;
+  width: var(--scene-w);
+  height: var(--scene-h);
+  margin: calc(var(--scene-h) / -2 - var(--lift)) 0 0 calc(var(--scene-w) / -2);
+  overflow: hidden;
+  pointer-events: none;
+}
+.scene--front {
+  z-index: 1;
+  margin-top: calc(var(--scene-h) / -2);
+}
+.scene picture,
+.scene img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+.scene [data-mouse],
+.scene [data-tree],
+.scene [data-photo] {
+  height: 100%;
+  will-change: transform;
+}
+
+/* 1. Стена: стоит точно по сцене, за краями - достроенные поля (32 и 20 px из 1672×941) */
+.scene__wall {
+  position: absolute;
+  inset: calc(100% * -20 / 941) calc(100% * -32 / 1672);
+}
+
+/* 2. Фамилия - надпись из основной версии (шрифт, цвет и место по вертикали из
+      .hero__name), но слоем сцены: перед стеной с крышей, за фигурой и деревьями.
+      Размер чуть меньше основной версии: 28vw вместо 31.2vw (от 768 px - 28.7vw вместо 31.9vw). */
+.scene__name {
+  position: absolute;
+  inset: 0;
+}
+.scene .hero__name {
+  z-index: auto;
+  left: var(--edge);
+  right: auto;
+  width: 100vw;
+  top: calc((var(--scene-h) - var(--hero-h)) / 2 + var(--lift) + var(--header-h) + 0.5svh);
+  font-size: 28vw;
+}
+
+/* 3. Заур: центр на 50% ширины, голова на 35% высоты, подошва на 96% */
+.scene__zaur {
+  position: absolute;
+  left: 50%;
+  top: 34.9%;
+  height: 61.7%;
+  aspect-ratio: 591 / 1706;
+  transform: translateX(-50%);
+}
+.scene__zaur [data-photo] {
+  position: relative;
+}
+.scene__zaur picture {
+  position: relative;
+}
+.scene__shadow {
+  position: absolute;
+  left: -12%;
+  right: -22%;
+  bottom: -2.6%;
+  height: 8.5%;
+  background: radial-gradient(closest-side, rgba(17, 16, 16, 0.5), rgba(17, 16, 16, 0.22) 55%, rgba(17, 16, 16, 0));
+}
+
+/* 4. Деревья: два независимых слоя, увеличены на 3% от своего угла привязки
+      (левое - от левого нижнего, правое - от правого нижнего) и сдвинуты за край сцены
+      на амплитуду смещения, чтобы при движении не открывался срез картинки. */
+.scene__tree {
+  position: absolute;
+}
+.scene__tree--left {
+  left: -20px;
+  bottom: -10px;
+  /* на низких окнах 3% меньше запаса на смещение, поэтому не меньше +18 px */
+  width: max(100% * 847 / 1672 * 1.03, 100% * 847 / 1672 + 18px);
+  aspect-ratio: 847 / 941;
+}
+.scene__tree--right {
+  right: -24px;
+  bottom: -12px;
+  width: max(100% * 825 / 1672 * 1.03, 100% * 825 / 1672 + 21px);
+  aspect-ratio: 825 / 941;
+}
+
+/* 5. Фонари на золотых нитях. Нить начинается выше края сцены - запас на смещение. */
+.scene__lanterns {
+  position: absolute;
+  inset: 0;
+}
+.hero--scene .lantern {
+  top: -40px;
+  right: auto;
+  width: calc(var(--scene-w) * 0.0345);
+  margin-left: calc(var(--scene-w) * -0.01725);
+}
+.hero--scene .lantern--wa {
+  left: 15.5%;
+  --len: calc(var(--scene-h) * 0.258 + 40px);
+}
+.hero--scene .lantern--mid {
+  left: 38.1%;
+  --len: calc(var(--scene-h) * 0.117 + 40px);
+}
+.hero--scene .lantern--tg {
+  left: 84.2%;
+  --len: calc(var(--scene-h) * 0.221 + 40px);
+}
+.hero--scene .lantern__link {
+  position: relative;
+  aspect-ratio: 522 / 1467;
+  pointer-events: auto;
+}
+.lantern__badge {
+  position: absolute;
+  left: 50%;
+  top: 33.5%;
+  width: 58%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-paper);
+  color: var(--color-lacquer-deep);
+}
+.hero--scene .lantern__link svg {
+  width: 60%;
+  height: auto;
+  filter: none;
+}
+
+/* 6. Лепестки: холст больше экрана на двойную амплитуду смещения */
+.hero__petals-layer {
+  position: absolute;
+  z-index: 2;
+  inset: -44px -84px;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Лёгкое затемнение под шапкой: без него пункты меню теряются на цветах */
+.hero__topshade {
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 auto 0;
+  height: calc(var(--header-h) * 1.6);
+  background: linear-gradient(180deg, rgba(125, 9, 28, 0.6) 0%, rgba(125, 9, 28, 0) 100%);
+  pointer-events: none;
+}
+/* Подзаголовок и подпись справа стоят на камнях - мягкая тень вместо плашки */
+.hero--scene .hero__sub,
+.hero--scene .hero__side-caption {
+  text-shadow:
+    0 1px 2px rgba(17, 16, 16, 0.55),
+    0 0 14px rgba(17, 16, 16, 0.6);
+}
+
+@media (min-width: 768px) {
+  .hero--scene {
+    --hero-h: max(100svh, 620px);
+  }
+  .scene .hero__name {
+    top: calc((var(--scene-h) - var(--hero-h)) / 2 + var(--lift) + var(--header-h) + 1svh);
+    font-size: 28.7vw;
+  }
+  /* Подзаголовок и кнопки сдвинуты влево от камней: правый край блока стоит
+     на 92.4% ширины сцены (подобрано по просьбам владельца: 87% → +10% → +15% ширины блока) */
+  .hero--scene .hero__right {
+    margin-right: max(0px, var(--scene-w) * 0.076 - var(--edge) - var(--gutter));
+  }
+}
+
+/* Подзаголовок справа чуть крупнее основной версии (там clamp(15px, 1.15vw, 19px)) -
+   на фоне сцены так легче читать */
+@media (min-width: 768px) {
+  .hero--scene .hero__sub {
+    font-size: clamp(17px, 1.35vw, 22px);
+  }
+}
+
+/* Блок справа стоит в один ряд с первой строкой оффера, кнопки - в ряд.
+   Уже 1280 px кнопки в ряд заходят на фигуру, там они остаются одна под другой */
+@media (min-width: 1280px) {
+  .hero--scene .hero__right {
+    align-self: start;
+    max-width: none;
+  }
+  .hero--scene .hero__cta {
+    flex-wrap: nowrap;
+  }
+}
+
+/* Узкий экран (телефон, планшет стоя): сцена обрезана по центру на проёме,
+   деревья и фонари с иконками прижаты к краям экрана. */
+@media (max-aspect-ratio: 11/8) {
+  .hero--scene {
+    --tree-out-l: 0.5;
+    --tree-out-r: 0.4;
+  }
+  .scene__tree--left {
+    left: calc(var(--edge) - var(--scene-w) * 847 / 1672 * 1.03 * var(--tree-out-l));
+  }
+  .scene__tree--right {
+    right: calc(var(--edge) - var(--scene-w) * 825 / 1672 * 1.03 * var(--tree-out-r));
+  }
+  .hero--scene .lantern {
+    width: clamp(64px, 5.6vw, 96px);
+    margin-left: 0;
+  }
+  .hero--scene .lantern--wa {
+    left: calc(var(--edge) + 6vw);
+    --len: calc(13svh + 40px);
+  }
+  .hero--scene .lantern--tg {
+    left: auto;
+    right: calc(var(--edge) + 6vw);
+    --len: calc(9svh + 40px);
+  }
+}
+
+@media (max-width: 767px) {
+  .hero--scene {
+    --lift: 9svh;
+    --tree-out-l: 0.68;
+    --tree-out-r: 0.5;
+  }
+  .hero--scene .lantern {
+    width: 58px;
+  }
+  .hero--scene .lantern--wa {
+    left: calc(var(--edge) + 5vw);
+  }
+  .hero--scene .lantern--tg {
+    right: calc(var(--edge) + 5vw);
+  }
+  .hero--scene .lantern--mid {
+    display: none;
+  }
+  /* Надпись на телефоне стоит не под шапкой, а сразу под крышей (низ крыши - 31.9%
+     высоты сцены): буквы оказываются за головой и плечами фигуры */
+  .scene .hero__name {
+    top: calc(var(--scene-h) * 0.322);
+  }
+}
