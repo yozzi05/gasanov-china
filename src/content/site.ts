@@ -54,7 +54,7 @@ export const site = {
 
   stats: [
     { value: "40+", label: "тонн в месяц" },
-    { value: "4", label: "года в товарном бизнесе" },
+    { value: "5", label: "лет в товарном бизнесе" },
     { value: "2", label: "года живу в Китае" },
     { value: "1 $", label: "за кг - тариф от" },
   ],
