@@ -35,17 +35,13 @@ export function Calculator() {
   const daysText = `${plan.days[0]}-${plan.days[1]} дней`;
 
   const notes: string[] = [];
-  if (ready && w < plan.minKg) notes.push(`Минимальная партия - ${plan.minKg} кг.`);
+  if (ready && "minKg" in plan && w < plan.minKg) notes.push(plan.minKgHint);
   if (ready && density < tariffs.minDensity)
     notes.push(
       `Плотность ниже ${tariffs.minDensity} кг/м³ - лёгкий объёмный груз считаем индивидуально, цена за кг будет выше.`,
     );
   if (ready && w >= tariffs.individualFromKg)
-    notes.push(
-      "discountFromKg" in plan
-        ? `От ${plan.discountFromKg} кг на эту категорию действует скидка.`
-        : `От ${tariffs.individualFromKg} кг - индивидуальный расчёт, цена обычно ниже.`,
-    );
+    notes.push(`От ${tariffs.individualFromKg} кг - индивидуальный расчёт, цена обычно ниже.`);
 
   const message = ready
     ? `Здравствуйте, Заур! Хочу получить точный расчёт доставки из Китая.\n` +

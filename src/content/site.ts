@@ -142,9 +142,17 @@ export const site = {
     minDensity: 100,
     individualFromKg: 200, // от 200 кг - индивидуальный расчёт
     plans: [
-      { id: "standard", label: "Стандарт", days: [15, 25], pricePerKg: [1, 3.6], minKg: 15 },
-      { id: "fast", label: "Быстрый", days: [15, 20], pricePerKg: [2.3, 3.6], minKg: 15 },
-      { id: "clothes", label: "Одежда и обувь", days: [15, 25], pricePerKg: [3.5, 3.5], minKg: 15, discountFromKg: 200 },
+      { id: "consolidated", label: "Сборный груз", days: [15, 25], pricePerKg: [3.5, 3.5] }, // УТОЧНИТЬ: срок
+      { id: "clothes", label: "Одежда и обувь", days: [15, 20], pricePerKg: [2.3, 3.6] },
+      {
+        id: "household",
+        label: "Хозтовары",
+        days: [15, 25],
+        pricePerKg: [1, 3.6],
+        minKg: 15,
+        minKgLabel: "от 15 кг, один вид товара", // в таблице рядом со сроком
+        minKgHint: "Хозтовары считаем от 15 кг одного вида товара", // подсказка в калькуляторе
+      },
     ],
     disclaimer:
       "Расчёт ориентировочный, точную цену назовём после заявки. Компенсация за повреждение хрупких товаров не предусмотрена.",
