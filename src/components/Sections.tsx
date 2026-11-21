@@ -121,6 +121,7 @@ export function CalcSection() {
                 <span className="tariffs__name">{p.label}</span>
                 <span className="tariffs__days">
                   {p.days[0]}-{p.days[1]} дней
+                  {"minKgLabel" in p && ` · ${p.minKgLabel}`}
                 </span>
                 <span className="tariffs__price">{price(p.pricePerKg)}</span>
               </li>
