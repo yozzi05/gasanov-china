@@ -3,6 +3,7 @@
 import sharp from "sharp";
 import fs from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 
 const SRC = "assets/originals";
 const OUT = "public/images";
@@ -61,11 +62,14 @@ for (const file of fs.readdirSync(SRC).sort()) {
 // Кейсы: assets/cases/<id>/ → public/cases/<id>/.
 // Фото и скриншоты (*.jpg) нарезаются в AVIF + WebP, в манифест попадают как «cases/<id>/<имя>».
 // Видео (video.mp4, уже сжато в H.264) и субтитры (captions.vtt) копируются как есть.
-// SKIP: файлы, которые на сайт не попадают (у G17-004 в переписке грубоватое слово -
+// NO_AUDIO: видео, у которых на сайте не должно быть звука (чужая музыка) - звуковая
+// дорожка убирается через ffmpeg без перекодирования картинки (-c:v copy -an).
+// SKIP: файлы, которые на сайт не попадают (у G17-005 в переписке грубоватое слово -
 // её текст дан цитатой в блоке отзывов).
 {
   const CASES = "assets/cases";
-  const SKIP = new Set(["g17-004/chat.jpg"]);
+  const SKIP = new Set(["g17-005/chat.jpg"]);
+  const NO_AUDIO = new Set(["g17-002/video-2.mp4"]);
   for (const id of fs.existsSync(CASES) ? fs.readdirSync(CASES).sort() : []) {
     const dir = path.join(CASES, id);
     if (!fs.statSync(dir).isDirectory()) continue;
@@ -74,6 +78,11 @@ for (const file of fs.readdirSync(SRC).sort()) {
     for (const file of fs.readdirSync(dir).sort()) {
       const { name, ext } = path.parse(file);
       if (SKIP.has(`${id}/${file}`)) continue;
+      if (NO_AUDIO.has(`${id}/${file}`)) {
+        const r = spawnSync("ffmpeg", ["-y", "-loglevel", "error", "-i", path.join(dir, file), "-c:v", "copy", "-an", "-movflags", "+faststart", path.join(out, file)]);
+        if (r.status !== 0) throw new Error(`ffmpeg: ${id}/${file} - нужен ffmpeg в PATH`);
+        continue;
+      }
       if (ext === ".mp4" || ext === ".vtt") {
         fs.copyFileSync(path.join(dir, file), path.join(out, file));
         continue;

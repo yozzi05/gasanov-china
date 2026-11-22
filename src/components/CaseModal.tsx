@@ -338,6 +338,9 @@ function Gallery({ media, title, onZoom }: { media: CaseMedia[]; title: string; 
                 <video
                   controls
                   playsInline
+                  muted={m.muted}
+                  data-muted={m.muted || undefined}
+                  controlsList={m.muted ? "nodownload noplaybackrate" : undefined}
                   preload="none"
                   poster={m.poster ? `${BASE_PATH}/${m.poster}-828.webp` : undefined}
                   src={BASE_PATH + m.src}

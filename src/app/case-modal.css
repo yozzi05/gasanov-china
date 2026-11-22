@@ -113,6 +113,12 @@
 .cmodal__slide video {
   background: var(--color-ink);
 }
+/* видео без звука (чужая музыка): прячем кнопку и ползунок громкости */
+.cmodal__slide video[data-muted]::-webkit-media-controls-mute-button,
+.cmodal__slide video[data-muted]::-webkit-media-controls-volume-slider,
+.cmodal__slide video[data-muted]::-webkit-media-controls-volume-control-container {
+  display: none;
+}
 .cmodal__zoom-btn {
   display: block;
   width: 100%;

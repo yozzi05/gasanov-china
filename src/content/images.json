@@ -83,55 +83,79 @@
     "width": 720,
     "height": 1272
   },
-  "cases/g17-002/poster": {
+  "cases/g17-002/cover": {
+    "width": 1200,
+    "height": 1600
+  },
+  "cases/g17-002/photo-1": {
+    "width": 1206,
+    "height": 2144
+  },
+  "cases/g17-002/photo-2": {
+    "width": 1449,
+    "height": 2576
+  },
+  "cases/g17-002/photo-3": {
+    "width": 1600,
+    "height": 2133
+  },
+  "cases/g17-002/poster-1": {
     "width": 720,
     "height": 1280
   },
-  "cases/g17-003/chat": {
-    "width": 1206,
-    "height": 2091
+  "cases/g17-002/poster-2": {
+    "width": 720,
+    "height": 1280
   },
   "cases/g17-003/poster": {
     "width": 720,
     "height": 1280
   },
-  "cases/g17-004/photo": {
-    "width": 948,
-    "height": 1660
+  "cases/g17-004/chat": {
+    "width": 1206,
+    "height": 2091
   },
   "cases/g17-004/poster": {
     "width": 720,
-    "height": 1260
+    "height": 1280
+  },
+  "cases/g17-005/photo": {
+    "width": 948,
+    "height": 1660
   },
   "cases/g17-005/poster": {
     "width": 720,
+    "height": 1260
+  },
+  "cases/g17-006/poster": {
+    "width": 720,
     "height": 1280
   },
-  "cases/g17-006/chat-factory": {
+  "cases/g17-007/chat-factory": {
     "width": 1206,
     "height": 1689
   },
-  "cases/g17-006/chat-review": {
+  "cases/g17-007/chat-review": {
     "width": 1206,
     "height": 1226
   },
-  "cases/g17-006/photo-1": {
+  "cases/g17-007/photo-1": {
     "width": 1672,
     "height": 941
   },
-  "cases/g17-006/photo-2": {
+  "cases/g17-007/photo-2": {
     "width": 1672,
     "height": 941
   },
-  "cases/g17-007/poster": {
+  "cases/g17-008/poster": {
     "width": 720,
     "height": 1290
   },
-  "cases/g17-008/photo": {
+  "cases/g17-009/photo": {
     "width": 1206,
     "height": 2144
   },
-  "cases/g17-008/poster": {
+  "cases/g17-009/poster": {
     "width": 720,
     "height": 1280
   }
