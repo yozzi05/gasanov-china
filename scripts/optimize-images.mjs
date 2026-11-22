@@ -62,14 +62,14 @@ for (const file of fs.readdirSync(SRC).sort()) {
 // Кейсы: assets/cases/<id>/ → public/cases/<id>/.
 // Фото и скриншоты (*.jpg) нарезаются в AVIF + WebP, в манифест попадают как «cases/<id>/<имя>».
 // Видео (video.mp4, уже сжато в H.264) и субтитры (captions.vtt) копируются как есть.
-// NO_AUDIO: видео, у которых на сайте не должно быть звука (чужая музыка) - звуковая
+// NO_AUDIO: видео, у которых на сайте не должно быть звука, - звуковая
 // дорожка убирается через ffmpeg без перекодирования картинки (-c:v copy -an).
 // SKIP: файлы, которые на сайт не попадают (у G17-005 в переписке грубоватое слово -
 // её текст дан цитатой в блоке отзывов).
 {
   const CASES = "assets/cases";
   const SKIP = new Set(["g17-005/chat.jpg"]);
-  const NO_AUDIO = new Set(["g17-002/video-2.mp4"]);
+  const NO_AUDIO = new Set([]);
   for (const id of fs.existsSync(CASES) ? fs.readdirSync(CASES).sort() : []) {
     const dir = path.join(CASES, id);
     if (!fs.statSync(dir).isDirectory()) continue;

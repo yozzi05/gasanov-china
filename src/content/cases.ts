@@ -18,7 +18,7 @@ export type CaseMedia = {
   captions?: string;
   /** подпись под кадром */
   caption?: string;
-  /** у видео - без звука: muted, без кнопки звука (в ролике чужая музыка) */
+  /** у видео - без звука: muted, без кнопки звука */
   muted?: boolean;
 };
 
@@ -118,8 +118,6 @@ export const cases: CaseItem[] = [
         src: "/cases/g17-002/video-2.mp4",
         poster: "cases/g17-002/poster-2",
         caption: "Станки уже работают в цеху клиента",
-        // в ролике чужая музыка: на сайте файл без звуковой дорожки (npm run images), плеер без кнопки звука
-        muted: true,
       },
     ],
     reviews: [
