@@ -182,13 +182,7 @@ export function Calculator() {
                 </span>
               </dd>
             ) : result.status === "individual" ? (
-              // индивидуальный расчёт: на месте цены - кнопка заявки
-              <dd>
-                <InkButton href={whatsappLink(message)} variant="red" external className="calc__cta calc__cta--price">
-                  <WhatsAppIcon className="h-5 w-5" />
-                  {calc.ctaIndividual}
-                </InkButton>
-              </dd>
+              <dd className="calc__price-text">{result.message}</dd>
             ) : (
               <dd>-</dd>
             )}
@@ -233,18 +227,15 @@ export function Calculator() {
             ))}
           </ul>
         )}
-        {/* при индивидуальном расчёте кнопка уже стоит на месте цены */}
-        {result.status !== "individual" && (
-          <InkButton
-            href={whatsappLink(message)}
-            variant="red"
-            external
-            className="calc__cta"
-          >
-            <WhatsAppIcon className="h-5 w-5" />
-            {calc.cta}
-          </InkButton>
-        )}
+        <InkButton
+          href={whatsappLink(message)}
+          variant="red"
+          external
+          className="calc__cta"
+        >
+          <WhatsAppIcon className="h-5 w-5" />
+          {calc.cta}
+        </InkButton>
         <p className="calc__disclaimer">{tariffs.disclaimer}</p>
       </div>
     </div>
