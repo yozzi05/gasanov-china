@@ -10,6 +10,7 @@ import { Pic } from "./Pic";
 import { Seal } from "./Seal";
 import { Calculator } from "./Calculator";
 import { RateValue } from "./Rate";
+import { CopyAddress } from "./CopyAddress";
 import { TelegramIcon, WhatsAppIcon } from "./icons";
 
 type ImageName = keyof typeof manifest;
@@ -315,10 +316,23 @@ export function Footer() {
               <a href={`mailto:${contacts.email}`}>{contacts.email}</a>
             </p>
           </div>
-          <div>
-            <h3>Где мы</h3>
-            <p>Офис - {contacts.office}</p>
-            <p>Склад - {contacts.warehouse}</p>
+          <div className="footer__places">
+            <div>
+              <h3>{contacts.warehouse.label}</h3>
+              <p>{contacts.warehouse.addressRu}</p>
+              <p id="warehouse-zh" className="footer__zh" lang="zh-CN">
+                {contacts.warehouse.addressZh}
+              </p>
+              <CopyAddress text={contacts.warehouse.addressZh} targetId="warehouse-zh" />
+            </div>
+            <div>
+              <h3>{contacts.office.label}</h3>
+              <p>
+                <a href={contacts.office.map} target="_blank" rel="noopener noreferrer">
+                  {contacts.office.address}
+                </a>
+              </p>
+            </div>
           </div>
           <nav aria-label="Разделы сайта">
             <h3>Разделы</h3>

@@ -22,7 +22,23 @@ const jsonLd = {
   telephone: tel,
   email: site.contacts.email,
   founder: { "@type": "Person", name: site.person },
-  address: { "@type": "PostalAddress", addressLocality: site.contacts.office, addressCountry: "RU" },
+  address: [
+    {
+      "@type": "PostalAddress",
+      name: site.contacts.office.label,
+      addressCountry: "RU",
+      addressLocality: site.contacts.office.city,
+      streetAddress: site.contacts.office.street,
+    },
+    {
+      "@type": "PostalAddress",
+      name: site.contacts.warehouse.label,
+      addressCountry: "CN",
+      addressRegion: site.contacts.warehouse.region,
+      addressLocality: site.contacts.warehouse.city,
+      streetAddress: site.contacts.warehouse.addressRu,
+    },
+  ],
   areaServed: ["RU", "CN"],
   sameAs: [site.contacts.telegram, site.contacts.telegramChannel, site.contacts.instagram],
   contactPoint: {

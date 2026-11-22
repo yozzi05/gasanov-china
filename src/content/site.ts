@@ -24,8 +24,22 @@ export const site = {
     telegramChannel: "https://t.me/rub_yuan_G17", // УТОЧНИТЬ: канал с курсом (со старого сайта)
     instagram: "https://instagram.com/gasanov.china/",
     email: "g17@gmail.com",
-    office: "Махачкала",
-    warehouse: "Фошань (Гуандун)",
+    office: {
+      label: "Офис в Махачкале",
+      city: "Махачкала",
+      address: "г. Махачкала, ул. Ирчи Казака, 49",
+      street: "ул. Ирчи Казака, 49",
+      map: `https://yandex.ru/maps/?text=${encodeURIComponent("Махачкала, улица Ирчи Казака, 49")}`,
+    },
+    warehouse: {
+      label: "Склад в Китае",
+      region: "Гуандун",
+      city: "Фошань",
+      // адрес для поставщика - его копируют кнопкой в подвале
+      addressZh: "广东省佛山市南海区大沥镇海北大道，广铝凤铝铝材院内，Cargo G17仓库",
+      addressRu:
+        "Китай, провинция Гуандун, г. Фошань, район Наньхай, посёлок Дали, проспект Хайбэй, территория алюминиевого завода Guanglv / Fenglv, склад Cargo G17",
+    },
   },
 
   // Готовые тексты сообщений для мессенджеров
