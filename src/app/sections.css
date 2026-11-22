@@ -659,9 +659,9 @@ html[data-motion="on"] .waybill[data-in] .waybill__stamp {
   color: rgba(244, 239, 230, 0.8);
 }
 /* «Индивидуальный расчёт» вместо суммы */
-.calc__price dd.calc__price-text {
-  font-size: clamp(40px, 12.2vw, 64px);
-  white-space: normal;
+/* индивидуальный расчёт: на месте цены - кнопка «Получить расчёт» */
+.calc__price .calc__cta--price {
+  margin-top: 8px;
 }
 /* следующая ступень веса дешевле - плашка с тонкой золотой рамкой */
 .calc__next {

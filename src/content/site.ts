@@ -147,7 +147,7 @@ export const site = {
     minDensity: 100,
     individualFromKg: 200, // от 200 кг - индивидуальный расчёт
     plans: [
-      { id: "consolidated", label: "Сборный груз", days: [15, 25], pricePerKg: [3.5, 3.5] }, // УТОЧНИТЬ: срок
+      { id: "consolidated", label: "Сборный груз", days: [15, 25], pricePerKg: [3.3, 3.5] }, // УТОЧНИТЬ: срок
       { id: "clothes", label: "Одежда и обувь", days: [15, 20], pricePerKg: [2.3, 3.6] },
       {
         id: "household",
@@ -167,6 +167,7 @@ export const site = {
     hanzi: "货运",
     title: ["Калькулятор", "доставки"],
     cta: "Получить точный расчёт",
+    ctaIndividual: "Получить расчёт", // на месте цены при индивидуальном расчёте
   },
 
   rate: {

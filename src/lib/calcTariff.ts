@@ -9,6 +9,7 @@ import {
   type Category,
   type CategoryId,
   type DensityRow,
+  type WeightStep,
 } from "../content/tariff-grids";
 
 export type Tier = { from: number; to: number };
@@ -28,8 +29,9 @@ export type CalcResult =
       min: number;
       max: number;
       tier: Tier;
-      /** следующая ступень веса, если на ней тариф ниже (для сетки; у сборного груза нет) */
-      next: { from: number; rate: number } | null;
+      /** следующая ступень веса, если на ней тариф ниже.
+       *  over: граница в неё не входит («Свыше 100 кг»), иначе «От 100 кг» */
+      next: { from: number; rate: number; over?: boolean } | null;
     };
 
 export const EMPTY_MESSAGE = "Введите вес и объём, чтобы увидеть цену";
@@ -121,6 +123,11 @@ export function tierIndex(weight: number): number {
   return WEIGHT_TIERS.findIndex((t) => weight >= t.from && weight < t.to);
 }
 
+/** Ступень сборного груза: нижняя граница входит, верхняя - только при toInclusive */
+export function stepIndex(steps: readonly WeightStep[], weight: number): number {
+  return steps.findIndex((s) => weight >= s.from && (weight < s.to || (s.toInclusive === true && weight === s.to)));
+}
+
 /** Строка сетки по плотности: нижняя граница входит, верхняя нет (кроме toInclusive) */
 export function findRow(grid: readonly DensityRow[], density: number): DensityRow | null {
   return (
@@ -153,14 +160,20 @@ export function calcTariff(input: { category: CategoryId; weight: number; volume
   if (cat.density.max !== null && density > cat.density.max)
     return { status: "individual", message: INDIVIDUAL, reason: DENSITY_HIGH_SHOES, density };
 
-  const ti = tierIndex(weight);
-  const tier = WEIGHT_TIERS[ti];
+  let tier: Tier;
   let rate: number;
-  let next: { from: number; rate: number } | null = null;
+  let next: { from: number; rate: number; over?: boolean } | null = null;
 
-  if (cat.fixedRate !== undefined) {
-    rate = cat.fixedRate;
+  if (cat.steps) {
+    const si = stepIndex(cat.steps, weight);
+    const step = cat.steps[si];
+    tier = { from: step.from, to: step.to };
+    rate = step.rate;
+    const after = cat.steps[si + 1];
+    if (after && after.rate < rate) next = { from: after.from, rate: after.rate, over: step.toInclusive === true };
   } else {
+    const ti = tierIndex(weight);
+    tier = WEIGHT_TIERS[ti];
     const row = cat.grid ? findRow(cat.grid, density) : null;
     // сюда не попадаем: плотность уже проверена по диапазону категории
     if (!row) return { status: "individual", message: INDIVIDUAL, reason: DENSITY_LOW, density };
@@ -205,7 +218,7 @@ export function buildRequestText(p: {
       `Ориентир с сайта: ≈ ${fmtInt(result.total)} $ (от ${fmtInt(result.min)} до ${fmtInt(result.max)} $), ` +
         `тариф ${fmtRate(result.rate)} $/кг`,
     );
-  else if (result.status === "individual") lines.push(`Расчёт: индивидуальный - ${result.reason}`);
+  else if (result.status === "individual") lines.push(`Нужен индивидуальный расчёт: ${result.reason}`);
   else if (result.status === "below-min") lines.push(result.message);
   return lines.join("\n");
 }

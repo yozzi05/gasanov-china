@@ -75,6 +75,7 @@ describe("границы веса (одежда, плотность 200 - стр
   });
   it("199,9 кг - ещё 100-200", () => assert.deepEqual(price(at("clothes", 199.9, 200)).tier, { from: 100, to: 200 }));
   it("200 кг - индивидуально", () => assert.equal(at("clothes", 200, 200).status, "individual"));
+  it("плашка сетки - «От 100 кг» (без over)", () => assert.equal(price(at("clothes", 50, 200)).next?.over, undefined));
 });
 
 describe("границы плотности (обувь, 100 кг - ступень 100-200)", () => {
@@ -109,19 +110,36 @@ describe("хозтовары (сетка «Монотовары»)", () => {
   it("лёгкий груз - индивидуально", () => assert.equal(individual(at("household", 50, 80)).reason, DENSITY_LOW));
 });
 
-describe("сборный груз", () => {
-  it("фикс 3,5 $/кг, вилка ±0,30, без подсказки про следующую ступень", () => {
+describe("сборный груз: две ступени веса", () => {
+  it("9,9 кг - ниже минимума", () => assert.equal(at("consolidated", 9.9, 200).status, "below-min"));
+  it("10 кг - 3,5 $/кг, ступень 10-100", () => {
+    const r = price(at("consolidated", 10, 200));
+    assert.equal(r.rate, 3.5);
+    assert.deepEqual(r.tier, { from: 10, to: 100 });
+  });
+  it("100 кг включительно - ещё 3,5 $/кг, вилка ±0,30", () => {
     const r = price(calcTariff({ category: "consolidated", weight: 100, volume: 0.5 }));
     assert.equal(r.rate, 3.5);
+    assert.deepEqual(r.tier, { from: 10, to: 100 });
     assert.equal(r.total, 350);
     assert.equal(r.min, 320);
     assert.equal(r.max, 380);
+  });
+  it("до 100 кг включительно - плашка «Свыше 100 кг тариф 3,3 $/кг»", () => {
+    for (const w of [10, 50, 100])
+      assert.deepEqual(price(at("consolidated", w, 200)).next, { from: 100, rate: 3.3, over: true });
+  });
+  it("100,01 кг - 3,3 $/кг, ступень 100-200, без плашки", () => {
+    const r = price(at("consolidated", 100.01, 200));
+    assert.equal(r.rate, 3.3);
+    assert.deepEqual(r.tier, { from: 100, to: 200 });
     assert.equal(r.next, null);
   });
+  it("199,9 кг - 3,3 $/кг", () => assert.equal(price(at("consolidated", 199.9, 200)).rate, 3.3));
+  it("200 кг - индивидуально", () => assert.equal(at("consolidated", 200, 200).status, "individual"));
   it("плотность ниже 100 - индивидуально", () => assert.equal(individual(at("consolidated", 100, 60)).reason, DENSITY_LOW));
   it("от 200 кг - индивидуально, общая строка", () =>
     assert.equal(individual(at("consolidated", 200, 200)).reason, HEAVY_DEFAULT));
-  it("минимум 10 кг", () => assert.equal(at("consolidated", 9.9, 200).status, "below-min"));
 });
 
 describe("одежда: точки сетки", () => {
@@ -206,7 +224,7 @@ describe("заявка в WhatsApp", () => {
       volume: 0.3,
       result: calcTariff({ category: "shoes", weight: 100, volume: 0.3 }),
     });
-    assert.match(text, /Расчёт: индивидуальный - Плотность выше 250/);
+    assert.match(text, /Нужен индивидуальный расчёт: Плотность выше 250/);
     assert.doesNotMatch(text, /Места:/);
   });
 });

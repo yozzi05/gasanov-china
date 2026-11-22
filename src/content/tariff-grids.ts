@@ -21,6 +21,12 @@ export type DensityRow = {
   toInclusive?: boolean;
 };
 
+/**
+ * Ступень веса со своим тарифом (сборный груз, без сетки плотности).
+ * Нижняя граница входит в ступень; верхняя - только при toInclusive.
+ */
+export type WeightStep = { from: number; to: number; rate: number; toInclusive?: boolean };
+
 export type CategoryId = "consolidated" | "clothes" | "shoes" | "household";
 
 export type Category = {
@@ -32,8 +38,8 @@ export type Category = {
   minKgMessage: string;
   /** допустимая плотность, кг/м³: вне её - индивидуальный расчёт */
   density: { min: number; max: number | null };
-  /** фиксированный тариф без сетки (сборный груз) */
-  fixedRate?: number;
+  /** тариф по ступеням веса без сетки (сборный груз) */
+  steps?: readonly WeightStep[];
   grid?: readonly DensityRow[];
   /** подсказка под кнопками категорий */
   hint?: string;
@@ -110,7 +116,12 @@ export const CATEGORIES: readonly Category[] = [
     minKg: 10,
     minKgMessage: "Минимальный вес отправки - 10 кг",
     density: { min: 100, max: null },
-    fixedRate: 3.5,
+    // от 10 до 100 кг включительно - 3,5 $/кг; свыше 100 и меньше 200 кг - 3,3 $/кг;
+    // от 200 кг - индивидуальный расчёт (INDIVIDUAL_FROM_KG)
+    steps: [
+      { from: 10, to: 100, toInclusive: true, rate: 3.5 },
+      { from: 100, to: 200, rate: 3.3 },
+    ],
   },
   {
     id: "clothes",
